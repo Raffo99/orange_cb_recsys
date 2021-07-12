@@ -6,6 +6,8 @@
 
 {% block header_import %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style/recsys-upload.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/recsys-upload-script.js') }}"></script>
 {% endblock %}
 
 {% block sub_header %} <h4>Setup Content</h4> {% endblock %}
@@ -23,11 +25,11 @@
                 <table>
                     <tr>
                         <td class="form-label"> Output directory name </td>
-                        <td> <input type="text" name="outputDir"> </td>
+                        <td> <input type="text" id="outputDir" name="outputDir"> </td>
                     </tr>
                      <tr>
                         <td class="form-label"> Path to content </td>
-                        <td> <input type="text" name="pathContent"> </td>
+                        <td> <input type="text" id="pathContent" name="pathContent"> </td>
                     </tr>
                 </table>
                 <input type="image" src="{{ url_for('static', filename='/icons/arrow-right-icon.svg') }}" alt="Submit">
