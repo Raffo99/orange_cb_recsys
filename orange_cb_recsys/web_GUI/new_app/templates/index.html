@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+    <title>ORANGE CB RECSYS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/mainpage.css') }}">
+</head>
+<body>
+    <div id="header">
+        <h1>ORANGE CB RECSYS</h1>
+    </div>
+    <div id="module-forms">
+        <div class="row">
+            <div class="col-1"></div>
+            <div class="col-2 module" id="ca-module">
+                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
+                <div class="module-name">CONTENT ANALYZER</div>
+                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
+                <hr>
+                <div class="module-button-config"><button onclick="location.href='{{ url_for('ca_upload') }}';">Nuova Configurazione</button></div>
+                <div class="module-button-config"><button>Configurazione già esistente</button></div>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-2 module" id="rs-module">
+                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
+                <div class="module-name">REC SYSTEM</div>
+                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
+                <hr>
+                <div class="module-button-config"><button onclick="location.href='{{ url_for('recsys_upload') }}';">Nuova Configurazione</button></div>
+                <div class="module-button-config"><button>Configurazione già esistente</button></div>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-2 module" id="ev-module">
+                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
+                <div class="module-name">EVALUATION MODEL</div>
+                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
+                <hr>
+                <div class="module-button-config"><button>Nuova Configurazione</button></div>
+                <div class="module-button-config"><button>Configurazione già esistente</button></div>
+            </div>
+            <div class="col-1"></div>
+        </div>
+    </div>
+</body>
