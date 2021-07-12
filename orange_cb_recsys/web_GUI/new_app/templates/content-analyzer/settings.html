@@ -1,0 +1,59 @@
+{% extends "base-settings-module.html" %}
+{% from "content-analyzer/helpers/_dynamicformhelper.html" import render_representation %}
+
+{% block title %}
+    Content Analyzer
+{% endblock %}
+
+{% block header_import %}
+    <title>Impostazioni Content Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-settings.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/ca-settings-script.js') }}"></script>
+{% endblock %}
+
+{% block header %}
+    <a href="{{ url_for('ca_fields') }}"><img id="back-button" src="{{ url_for('static', filename='icons/arrow-back-icon.svg') }}"></a>
+    <h1>CONTENT ANALYZER</h1>
+    <hr>
+{% endblock %}
+
+{% block sub_header %} <h4>Impostazioni Campi Dataset</h4> {% endblock %}
+
+{% block form_content %}
+    <div class="div-ca-settings">
+            <div class="col-1"></div>
+            <div class="col-2">
+                <div id="nav-bar-fields">
+                    <ul>
+                        {% for name, representations in fields.items() %}
+                            <div class="wrapper-option-number">
+                                <li id="nav-option-{{ name.replace(' ', '') }}">{{ name }}</li>
+                                {% if representations|length == 0 %}
+                                    <div class="number-representations">0</div>
+                                {% else %}
+                                    <div class="number-representations active-number">{{ representations|length }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-8">
+                <div id="div-content-field">
+                    <div class="field-container" id="-container">
+                        <select class="select-representation">
+                            <option value="default_option">Nuova Rappresentazione</option>
+                            {%  for algorithm in cp_algorithms %}
+                                <option class='new-representation' value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endfor %}
+                        </select>
+                        <ul class="representation-list">
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+    </div>
+{% endblock %}

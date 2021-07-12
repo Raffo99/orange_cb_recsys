@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<head>
+    <title>{% block title %} {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
+    {% block header_import %} {% endblock %}
+</head>
+<body>
+    <div id="box">
+        <div id="header">
+                <a href="{{ url_for('index') }}"><img id="home-button" src="{{ url_for('static', filename='icons/home-icon.svg') }}"></a>
+                {% block header %} {% endblock %}
+        </div>
+        <div id="sub-header">
+            {% block sub_header %} {% endblock %}
+        </div>
+        <div id="content">
+            {% block form_content %} {% endblock %}
+        </div>
+    </div>
+</body>

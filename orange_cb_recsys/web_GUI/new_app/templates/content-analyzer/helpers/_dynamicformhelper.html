@@ -1,0 +1,57 @@
+{% from "content-analyzer/helpers/_parmshelper.html" import render_param %}
+
+{% macro render_representation(representation) %}
+<div class="div-representation">
+    <div class="wrapper-name-id">
+        <button class="close-representation">–</button>
+        <div class="representation-algorithm-name"> {{ representation['algorithm']['name'] }} </div>
+        <div class="representation-id"> | Id Rappresentazione:
+            {% if representation %}
+                <input type="text" class="input-name-id" value="{{ representation['id'] }}"> </div>
+            {% else %}
+                <input type="text" class="input-name-id" value="default"> </div>
+            {% endif %}
+        <img class="delete-representation" src="{{ url_for('static', filename='icons/delete-icon.svg') }}">
+    </div>
+
+    <div class="wrapper-representation-content">
+        <div class="div-representation-header">
+            {% if representation['algorithm']['params'] %}
+                <div class="header-label">Parametri</div>
+            {% endif %}
+                <div class="header-label">Tecniche NLP</div>
+        </div>
+        <div class="div-representation-content">
+            {% if representation['algorithm']['params'] %}
+                <div class="hyperparam-table">
+                    {% for param in representation['algorithm']['params'] %}
+                        {{ render_param(param, false) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="nlp-table">
+                {% for technique in representation['preprocess'] %}
+                    <div class="nlp-technique">
+                        <div class="table-row row-header-nlp">
+                            <div class="table-cell">
+                                {% if 'use' in technique and technique['use'] %}
+                                    <input type="checkbox" name="nlp_technique" checked>
+                                {% else %}
+                                    <input type="checkbox" name="nlp_technique">
+                                {% endif %}
+                            </div>
+                            <div class="table-cell">
+                                <b>{{ technique['name'] }}</b>
+                            </div>
+                        </div>
+                        {% for param in technique['params'] %}
+                            {{ render_param(param, false) }}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

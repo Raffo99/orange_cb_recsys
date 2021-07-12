@@ -1,0 +1,87 @@
+{% extends "base-settings-module.html" %}
+
+{% block title %}
+    Content Analyzer
+{% endblock %}
+
+{% block header_import %}
+    <title>Impostazioni Content Analyzer</title>
+
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-fields.css') }}">
+
+    <script>
+    window.onload = function() {
+        var listCheckd = document.querySelectorAll('[type*="checkbox"]');
+        var listRadio = document.querySelectorAll('[type*="radio"]');
+
+        listCheckd.forEach(el => {
+            var checked = JSON.parse(sessionStorage.getItem(el.id));
+            document.getElementById(el.id).checked = checked;
+        });
+
+        listRadio.forEach(el => {
+           var checked = JSON.parse(sessionStorage.getItem(el.id));
+           document.getElementById(el.id).checked = checked;
+        });
+    }
+
+    window.onunload = function()  {
+        var listCheckd = document.querySelectorAll('[type*="checkbox"]');
+        var listRadio =  document.querySelectorAll('[type*="radio"]');
+
+        listCheckd.forEach( el => {
+           sessionStorage.setItem(el.id, el.checked);
+        });
+
+        listRadio.forEach( el => {
+            sessionStorage.setItem(el.id, el.checked);
+        });
+    }
+
+    </script>
+{% endblock %}
+
+{% block header %}
+    <h1>CONTENT ANALYZER</h1>
+    <hr>
+{% endblock %}
+
+{% block sub_header %} <h4>Impostazioni Campi Dataset</h4> {% endblock %}
+
+{% block form_content %}
+    <form class="ca-form" method="post" action="{{ url_for('ca_fields') }}">
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="ca-form-fields-header">
+                <table>
+                    <tr>
+                        <td><label class="table-id-label">Nome Campo</label></td>
+                        <td><label class="table-id-label">Analizza Campo</label></td>
+                        <td><label class="table-id-label">Campo ID</label></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="ca-form-fields-content">
+                <table>
+                    {% for field in fields %}
+                        <tr>
+                            <td>{{ field }}</td>
+                            <td><input type="checkbox" name="{{ field }}" id="{{ field }}_use"></td>
+                            <td><input type="checkbox" name="id_dataset" id="{{ field }}_id" value="{{ field }}"></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="col-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <input type="submit" value="Continua" class="button" id="continue-button">
+        </div>
+    </div>
+    </form>
+{% endblock %}

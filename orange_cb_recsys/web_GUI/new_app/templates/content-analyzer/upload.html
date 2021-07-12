@@ -1,0 +1,37 @@
+{% extends "base-settings-module.html" %}
+
+{% block title %}
+    Content Analyzer
+{% endblock %}
+
+{% block header_import %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-upload.css') }}">
+{% endblock %}
+
+{% block sub_header %} <h4>Setup Dataset</h4> {% endblock %}
+
+{% block header %}
+    <h1>CONTENT ANALYZER</h1>
+    <hr>
+{% endblock %}
+
+{% block form_content %}
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <form class="ca-form-upload"method="post" enctype=multipart/form-data>
+                <table>
+                    <tr>
+                        <td class="form-label"> Output directory name </td>
+                        <td> <input type="text" name="outputDir"> </td>
+                    </tr>
+                     <tr>
+                        <td class="form-label"> Dataset </td>
+                        <td> <input type="file" name="pathDataset"> </td>
+                    </tr>
+                </table>
+                <input type="image" src="{{ url_for('static', filename='/icons/arrow-right-icon.svg') }}" alt="Submit">
+            </form>
+        </div>
+    </div>
+{% endblock %}

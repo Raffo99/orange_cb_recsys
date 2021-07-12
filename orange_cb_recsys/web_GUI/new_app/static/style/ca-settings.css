@@ -1,0 +1,253 @@
+
+#nav-bar-fields {
+    border: 2px solid black;
+    height: 75vh;
+    overflow: auto;
+}
+
+#nav-bar-fields ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 5px;
+}
+
+#nav-bar-fields ul:first-child {
+    padding: 0px;
+}
+
+#nav-bar-fields ul li {
+    padding: 10px;
+}
+
+#div-content-field {
+    border: 2px solid black;
+    height: 75vh;
+    overflow-y: auto;
+}
+
+.field-container {
+    display: none;
+}
+
+.active-container {
+    display: block;
+}
+
+.active-field {
+    font-weight: bolder;
+}
+
+.div-ca-settings {
+    flex-grow: 1;
+}
+
+.representation-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.select-representation {
+    padding: 10px;
+    text-indent: 40%;
+    margin: 10px;
+    width: -moz-calc(100% - 20px);
+    width: -webkit-calc(100% - 20px);
+    width: -o-calc(100% - 20px);
+    width: calc(100% - 20px);
+}
+
+.header-label {
+    display: inline-block;
+    font-weight: bold;
+    flex: 4;
+}
+
+.hyperparam-table tr td {
+    padding: 5px;
+}
+
+.hyperparam-table {
+    margin-left: 10px;
+    flex: 4;
+    height: 100%;
+    display: table;
+    border-collapse: collapse;
+}
+
+.nlp-table {
+    margin-left: 15px;
+    height: 100%;
+    flex: 4;
+    display: table;
+    border-collapse: collapse;
+}
+
+.table-row {
+    display: table-row;
+}
+
+.nlp-technique .row-header-nlp {
+    border-bottom: 2px solid black;
+}
+
+.nlp-technique {
+    border: 2px solid black;
+}
+
+.table-cell:last-child {
+    flex: 2;
+    order: 2;
+}
+
+.table-cell:first-child {
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.table-cell {
+    display: table-cell;
+    padding: 5px;
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+.table-cell:last-child {
+    width: 100%;
+}
+
+.row-header-nlp td:first-child {
+    padding-left: 20px;
+}
+
+.wrapper-name-id {
+    margin-bottom: -2px;
+    padding: 5px 0 5px;
+    border-top: 2px solid black ;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+    display: flex;
+}
+
+.representation-algorithm-name {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+}
+
+.representation-id {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-representation {
+    width: 25px;
+    height: 20px;
+    text-align: center;
+    font-size: 23px;
+    font-weight: bold;
+    background: white;
+    border: 0px;
+}
+
+.close-representation:hover {
+    cursor: pointer;
+}
+
+.wrapper-option-number {
+    display: flex;
+}
+
+.wrapper-option-number:hover {
+    cursor: pointer;
+}
+
+.wrapper-option-number:last-child {
+    border-bottom-width: 0px;
+}
+
+[id*='nav-option-'] {
+    display: inline;
+}
+
+.number-representations {
+    order: 2;
+    margin-left: auto;
+    margin-right: 20px;
+    margin-top: 10px;
+    display: none;
+    font-weight: bold;
+}
+
+.active-number {
+    display: inline;
+}
+
+.div-representation-header {
+    margin: 15px 0px 0px 25px;
+    width: -moz-calc(100% - 25px);
+    width: -webkit-calc(100% - 25px);
+    width: -o-calc(100% - 25px);
+    width: calc(100% - 25px);
+    display: flex;
+    align-items: baseline;
+}
+
+.div-representation-content {
+    padding: 0px 10px 10px 10px;
+    display: flex;
+    align-items: baseline;
+}
+
+.div-representation:last-child {
+    border-bottom: 2px solid black;
+}
+
+.input-name-id {
+    border: 0px;
+    font-size: 15px;
+    margin-left: 5px;
+}
+
+.input-name-id:focus {
+    outline: none;
+}
+
+.tr-multiparam {
+    display: none;
+}
+
+.tr-multiparam .table-cell {
+    padding-left: 20px;
+}
+
+.delete-representation {
+    width: 30px;
+    order: 2;
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.delete-representation:hover {
+    cursor: pointer;
+}
+
+.div-nlp {
+    width: 50%;
+    display: inline;
+}
+
+.wrapper-representation-content {
+    display: flex;
+    flex-direction: column;
+    width: -moz-calc(100% - 20px);
+    width: -webkit-calc(100% - 20px);
+    width: -o-calc(100% - 20px);
+    width: calc(100% - 20px);
+}
+
+#header {
+    margin-top: 2%;
+}

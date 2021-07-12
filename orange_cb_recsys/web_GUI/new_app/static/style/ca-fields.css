@@ -1,0 +1,73 @@
+#ca-form-fields-content table tr td {
+    text-align: center;
+}
+
+#ca-form-fields-header table tr td {
+    text-align: center;
+}
+
+#ca-form-fields-header table tr td {
+    width: 25%;
+    padding-left: 0%;
+}
+#ca-form-fields-content table tr td {
+    width: 25%;
+    padding-left: 0%;
+}
+
+#ca-form-fields-content {
+    border: 2px solid black;
+    overflow: auto;
+    min-height: 55vh;
+    max-height: 55vh;
+    margin-top: 0px;
+    width: 100%;
+}
+
+#ca-form-fields-content table {
+    width: 100%;
+}
+
+#ca-form-fields-header {
+    border: 2px solid black;
+    border-bottom-width: 0px;
+    padding-bottom: 15px;
+    margin-bottom: 0px;
+    width: 100%;
+    font-weight: bold;
+}
+
+table {
+    width: -moz-calc(100% - 25px);
+    width: -webkit-calc(100% - 25px);
+    width: -o-calc(100% - 25px);
+    width: calc(100% - 25px);
+}
+
+#ca-form-fields-content td {
+    padding-top: 2%;
+}
+
+#ca-form-fields-header td {
+    padding-top: 3%;
+    padding-bottom: 0;
+}
+
+.button {
+    width: 100%;
+    border: 2px solid black;
+    padding: 5px;
+    font-weight: bolder;
+}
+
+.button:hover {
+    cursor: pointer;
+}
+
+#header {
+    margin-top: 2%;
+}
+
+#sub-header {
+    margin-bottom: 2%;
+}
