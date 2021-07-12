@@ -42,3 +42,13 @@ input[type='image'] {
     margin-left: auto;
     margin-right: 20px;
 }
+
+.wrapper-errors {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.div-error {
+    padding-bottom: 10px;
+
+}

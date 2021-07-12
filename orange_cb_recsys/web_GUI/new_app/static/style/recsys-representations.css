@@ -28,8 +28,8 @@
     border-color: black;
 }
 
-.representation-item {
-
+.representation-label {
+    text-align: center;
 }
 
 .representation-item input {
@@ -43,4 +43,5 @@
 
 .field-name {
     text-align: center;
+    font-weight: bold;
 }
