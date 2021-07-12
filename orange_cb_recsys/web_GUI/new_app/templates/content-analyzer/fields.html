@@ -8,38 +8,8 @@
     <title>Impostazioni Content Analyzer</title>
 
     <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/ca-fields-script.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-fields.css') }}">
-
-    <script>
-    window.onload = function() {
-        var listCheckd = document.querySelectorAll('[type*="checkbox"]');
-        var listRadio = document.querySelectorAll('[type*="radio"]');
-
-        listCheckd.forEach(el => {
-            var checked = JSON.parse(sessionStorage.getItem(el.id));
-            document.getElementById(el.id).checked = checked;
-        });
-
-        listRadio.forEach(el => {
-           var checked = JSON.parse(sessionStorage.getItem(el.id));
-           document.getElementById(el.id).checked = checked;
-        });
-    }
-
-    window.onunload = function()  {
-        var listCheckd = document.querySelectorAll('[type*="checkbox"]');
-        var listRadio =  document.querySelectorAll('[type*="radio"]');
-
-        listCheckd.forEach( el => {
-           sessionStorage.setItem(el.id, el.checked);
-        });
-
-        listRadio.forEach( el => {
-            sessionStorage.setItem(el.id, el.checked);
-        });
-    }
-
-    </script>
 {% endblock %}
 
 {% block header %}
