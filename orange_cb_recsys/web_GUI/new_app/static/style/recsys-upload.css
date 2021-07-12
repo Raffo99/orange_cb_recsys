@@ -1,0 +1,44 @@
+.recsys-form-upload {
+    border: 2px black solid;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+#submit-cell {
+    text-align: right;
+    padding-bottom: 10px;
+}
+
+.errors {
+    color: red;
+    font-size: 12px;
+    margin-top: 2%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.form-label {
+    font-weight: bold;
+    padding: 20px;
+}
+
+#header {
+    margin-top: 3%;
+}
+
+#sub-header {
+    margin-bottom: 7%;
+}
+
+input[type='text'] {
+    width: 90%;
+}
+
+input[type='image'] {
+    height: 50px;
+    order: 2;
+    margin-left: auto;
+    margin-right: 20px;
+}

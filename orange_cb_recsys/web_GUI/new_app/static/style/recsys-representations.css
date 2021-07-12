@@ -1,0 +1,46 @@
+#div-content-representations {
+    border: 2px solid black;
+    height: 75vh;
+    overflow-y: auto;
+}
+
+.field-wrapper {
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    padding: 10px 0 10px 0;
+    margin-top: -2px;
+}
+
+#header-representations {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px 0 10px 0;
+}
+
+.representations-list {
+    list-style-type: none;
+    margin: 0 0 10px;
+}
+
+.representations-list hr {
+    margin: 5px auto;
+    width: 30%;
+    border-color: black;
+}
+
+.representation-item {
+
+}
+
+.representation-item input {
+    vertical-align: bottom;
+    position: relative;
+}
+
+.representation-label {
+    display: block;
+}
+
+.field-name {
+    text-align: center;
+}
