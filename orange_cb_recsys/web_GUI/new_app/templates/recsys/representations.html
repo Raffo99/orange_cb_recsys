@@ -1,5 +1,4 @@
 {% extends "base-settings-module.html" %}
-{% from "_dynamicformhelper.html" import render_representation %}
 
 {% block title %}
     Content Analyzer
@@ -11,7 +10,7 @@
 {% endblock %}
 
 {% block header %}
-    <a href="{{ url_for('ca_fields') }}"><img id="back-button" src="{{ url_for('static', filename='icons/arrow-back-icon.svg') }}"></a>
+    <a href="{{ url_for('recsys_upload') }}"><img id="back-button" src="{{ url_for('static', filename='icons/arrow-back-icon.svg') }}"></a>
     <h1>RECOMMENDER SYSTEM</h1>
     <hr>
 {% endblock %}
@@ -21,8 +20,8 @@
 {% block form_content %}
     <div class="col-2"></div>
     <div class="col-8">
+        <div id="header-representations">FIELDS WITH REPRESENTATIONS</div>
         <div id="div-content-representations">
-            <div id="header-representations">FIELDS WITH REPRESENTATIONS</div>
             <div class="representations-list">
                 {% for field in fields_representations.items() %}
                     <div class="field-wrapper">
@@ -37,7 +36,7 @@
                                         {{ representations }}</label>
                                     </div>
                                 {% endfor %}
-                                </ul>
+                                </div>
                             {% endif %}
                     </div>
                 {% endfor %}
