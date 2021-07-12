@@ -1,145 +1,39 @@
-import importlib
-
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from werkzeug.utils import secure_filename
 import pandas as pd
 import os
-from os.path import join, dirname, realpath
 import json
+
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.utils import secure_filename
+from os.path import join, dirname, realpath
 
 from orange_cb_recsys.utils.load_content import load_content_instance
 from orange_cb_recsys.content_analyzer.content_representation.content import Content
-# import orange_cb_recsys.utils.runnable_instances as r_i
-from inspect import signature
-import inspect
 
+from utils.content_analyzer import get_ca_algorithms
+from utils.forms import allowed_file
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config['UPLOAD_FOLDER'] = join(dirname(realpath(__file__)), 'uploads\\')
 
 # Global vars for content_analyzer
-ALLOWED_EXTENSIONS = {'csv', 'json', 'dat'}
 fields = {}
-# instances_categories = r_i.categories
-# runnable_instances = r_i.get()
 content_production_algorithms = []
 preprocessing_algorithms = []
 memory_interfaces = []
-rating_algorithms = []
 
 # Global vars for recsys
 recsys_content = None
 
 
-# TODO: Add to a util gui module
-def update_ca_algorithms():
-    global content_production_algorithms
-    global preprocessing_algorithms
-    global memory_interfaces
-    global rating_algorithms
-
-    content_production_algorithms = []
-    preprocessing_algorithms = []
-    memory_interfaces = []
-    rating_algorithms = []
-
-    content_production_instances = []
-    preprocessing_instances = []
-    rating_instances = []
-    memory_interface_instances = []
-
-    '''
-    for instance in runnable_instances.items():
-        if not(isinstance(instance[1], str)) \
-                and "content_analyzer" in instance[1].__module__\
-                and not ("raw_information_source" in instance[1].__module__):
-            module_path = instance[1].__module__
-            if "memory_interface" in module_path:
-                memory_interface_instances.append(instance)
-            elif "information_processor" in module_path:
-                preprocessing_instances.append(instance)
-            elif "field_content_production_techniques" in module_path:
-                if len([a for a in instance[1].__mro__ if a.__name__ == "FieldContentProductionTechnique"]):
-                    content_production_instances.append(instance)
-            elif "ratings_manager" in module_path:
-                rating_instances.append(instance)
-    '''
-
-    # Get all the algorithms from the runnable instances
-    add_algorithms(content_production_algorithms, content_production_instances)
-    add_algorithms(preprocessing_algorithms, preprocessing_instances)
-    add_algorithms(rating_algorithms, rating_instances)
-
-
-# TODO: Add to a util gui module
-def get_parameters(signature_parameters):
-    if "self" in signature_parameters:
-        signature_parameters.remove("self")
-    parameters_array = []
-
-    for parm in signature_parameters:
-        if parm[1].name != 'lang':
-            parm_class = parm[1].annotation.__name__
-            if parm_class == 'bool' or parm_class == 'str' or parm_class == 'float':
-                # If the parameter is a simple class, i can directly add it to the array
-                parameters_array.append({
-                    'name': parm[1].name,
-                    'type': parm_class
-                })
-            else:
-                # If the parameter is a complex class, i can retrieve the possible values of the parameter
-                name_module = parm[1].annotation.__module__
-                last_index_point = name_module.rindex(".")
-                name_module = name_module[:(last_index_point - len(name_module))]
-                possible_values = []
-
-                '''
-                for inst in runnable_instances.items():
-                    if (not isinstance(inst[1], str)) and parm[1].annotation in inspect.getmro(inst[1]):
-                        possible_values.append({
-                            'name': inst[1].__name__,
-                            'params': get_parameters(list(signature(inst[1]).parameters.items()))
-                        })
-                '''
-
-                parameters_array.append({
-                    'name': parm[1].name,
-                    'type': 'radio',
-                    'params': possible_values
-                })
-    return parameters_array
-
-
-# TODO: Add to a util gui module
-def add_algorithms(algorithms_array, instances_array):
-
-    for instance in instances_array:
-        signature_parameters = list(signature(instance[1]).parameters.items())
-
-        # Get all the parameter of the instance
-        parameters_array = get_parameters(signature_parameters)
-
-        algorithms_array.append({
-            'name': instance[1].__name__,
-            'params': parameters_array
-        })
-
-
-# TODO: Add to a util gui module
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 @app.route('/')
 def index():
-    update_ca_algorithms()
+
     return render_template("index.html")
 
 
 # Pagina per caricare il dataset (CONTENT ANALYZER)
-@app.route('/ca-upload', methods=['POST', 'GET'])
+@app.route('/content-analyzer/upload', methods=['POST', 'GET'])
 def ca_upload():
     if request.method == 'POST':
         file = request.files['pathDataset']
@@ -155,11 +49,11 @@ def ca_upload():
             fields.clear()
             return redirect(url_for('ca_fields'))
 
-    return render_template('ca-upload.html')
+    return render_template('/content-analyzer/upload.html')
 
 
 # Pagina per scegliere quali campi utilizzare del dataset (CONTENT ANALYZER)
-@app.route('/ca-fields', methods=['POST', 'GET'])
+@app.route('/content-analyzer/fields', methods=['POST', 'GET'])
 def ca_fields():
     global fields
     if request.method == "POST":
@@ -191,21 +85,20 @@ def ca_fields():
         # TODO: Creare pagina di errore nel caso in cui pathDataset non sia settato
         return "Errore"
 
-    return render_template('ca-fields.html', fields=df.columns.values)
+    return render_template('/content-analyzer/fields.html', fields=df.columns.values)
 
 
 # Pagina per le varie impostazioni dei campi del dataset scelti precedentemente (CONTENT ANALYZER)
-@app.route('/ca-settings', methods=['POST', 'GET'])
+@app.route('/content-analyzer/settings', methods=['POST', 'GET'])
 def ca_settings():
     global fields
     global content_production_algorithms
     global preprocessing_algorithms
     global memory_interfaces
-    global rating_algorithms
 
-    update_ca_algorithms()
+    content_production_algorithms, preprocessing_algorithms, memory_interfaces = get_ca_algorithms()
 
-    return render_template('ca-settings.html', fields=fields, cp_algorithms=content_production_algorithms)
+    return render_template('/content-analyzer/settings.html', fields=fields, cp_algorithms=content_production_algorithms)
 
 
 # Pagina di supporto per la creazione dei form dinamici della pagina ca-settings
@@ -232,7 +125,7 @@ def representation_form_creator():
             'values': False
         }]
 
-    return render_template("_representationformcreator.html", representations=representations)
+    return render_template("/content-analyzer/helpers/_representationformcreator.html", representations=representations)
 
 
 # Pagina di supporto per aggiornare le rappresentazioni dei campi
