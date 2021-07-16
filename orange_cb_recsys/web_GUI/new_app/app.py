@@ -9,7 +9,8 @@ from os.path import join, dirname, realpath
 from orange_cb_recsys.utils.load_content import load_content_instance
 from orange_cb_recsys.content_analyzer.content_representation.content import Content
 
-from utils.content_analyzer import get_ca_algorithms
+from utils.algorithms import get_ca_algorithms
+from utils.algorithms import get_recsys_algorithms
 from utils.forms import allowed_file
 
 app = Flask(__name__)
@@ -28,7 +29,9 @@ recsys_content = None
 
 @app.route('/')
 def index():
-
+    c = get_recsys_algorithms()
+    c, p, t = get_ca_algorithms()
+    print(c)
     return render_template("index.html")
 
 
@@ -56,6 +59,7 @@ def ca_upload():
 @app.route('/content-analyzer/fields', methods=['POST', 'GET'])
 def ca_fields():
     global fields
+
     if request.method == "POST":
         new_fields = dict(request.form.items(multi=False))
 
@@ -97,6 +101,7 @@ def ca_settings():
     global memory_interfaces
 
     content_production_algorithms, preprocessing_algorithms, memory_interfaces = get_ca_algorithms()
+    print(content_production_algorithms)
 
     return render_template('/content-analyzer/settings.html', fields=fields, cp_algorithms=content_production_algorithms)
 
@@ -108,7 +113,7 @@ def representation_form_creator():
     global content_production_algorithms
     global preprocessing_algorithms
     global memory_interfaces
-    global rating_algorithms
+
     has_representation = request.json['has_representation']
 
     if has_representation:
@@ -122,7 +127,6 @@ def representation_form_creator():
             'id': 'default',
             'algorithm': algorithm,
             'preprocess': preprocessing_algorithms,
-            'values': False
         }]
 
     return render_template("/content-analyzer/helpers/_representationformcreator.html", representations=representations)
@@ -136,6 +140,7 @@ def ca_update_representations():
     if request.form:
         if not("delete_representation" in request.form):
             delete_representation = False
+            print(request.form['representations'])
             new_representations = json.loads(request.form['representations'])
         else:
             delete_representation = True
@@ -144,6 +149,7 @@ def ca_update_representations():
     else:
         if not("delete_representation" in request.json):
             delete_representation = False
+            print(request.json['representations'])
             new_representations = request.json['representations']
         else:
             delete_representation = True
@@ -154,6 +160,8 @@ def ca_update_representations():
         fields[field_name].pop(index_representation)
     else:
         fields[field_name] = new_representations
+
+    print(fields)
 
     return ""
 
@@ -195,13 +203,9 @@ def recsys_upload():
 def recsys_representations():
     global recsys_content
 
-    dict_fields = recsys_content.field_dict
-    for field in dict_fields.items():
-        print(field[0])
-        print(len(field[1].get_external_index()))
-        print(field[1].get_internal_index())
+    # algorithms = get_recsys_algorithms()
 
-    return render_template("./recsys/representations.html", fields_representations=dict_fields)
+    return render_template("/recsys/representations.html", fields_representations=recsys_content.field_dict)
 
 
 if __name__ == '__main__':
