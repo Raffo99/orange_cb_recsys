@@ -23,37 +23,38 @@
 
 {% block form_content %}
     <div class="div-ca-settings">
-            <div class="col-1"></div>
-            <div class="col-2">
-                <div id="nav-bar-fields">
-                    <ul>
-                        {% for name, representations in fields.items() %}
-                            <div class="wrapper-option-number">
-                                <li id="nav-option-{{ name.replace(' ', '') }}">{{ name }}</li>
-                                {% if representations|length == 0 %}
-                                    <div class="number-representations">0</div>
-                                {% else %}
-                                    <div class="number-representations active-number">{{ representations|length }}</div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="col-8">
-                <div id="div-content-field">
-                    <div class="field-container" id="-container">
-                        <select class="select-representation">
-                            <option value="default_option">Nuova Rappresentazione</option>
-                            {%  for algorithm in cp_algorithms %}
-                                <option class='new-representation' value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
-                            {% endfor %}
-                        </select>
-                        <ul class="representation-list">
-
-                        </ul>
+        <div class="col-1"></div>
+        <div class="col-2">
+            <div id="nav-bar-fields">
+                <ul>
+                {% for name, representations in fields.items() %}
+                    <div class="wrapper-option-number">
+                        <li id="nav-option-{{ name.replace(' ', '') }}">{{ name }}</li>
+                        {% if representations|length == 0 %}
+                            <div class="number-representations">0</div>
+                        {% else %}
+                            <div class="number-representations active-number">{{ representations|length }}</div>
+                        {% endif %}
                     </div>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-8">
+            <div id="div-content-field">
+                <div id="new-representation">
+                    <label>New Representation</label>
+                </div>
+                <div id="new-representation-options">
+                    {%  for algorithm in cp_algorithms %}
+                    <div class="new-representation-option">
+                        <label>{{ algorithm['name'] }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="representation-list">
                 </div>
             </div>
+        </div>
     </div>
 {% endblock %}

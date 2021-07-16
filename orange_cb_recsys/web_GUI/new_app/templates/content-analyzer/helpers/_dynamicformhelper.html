@@ -15,35 +15,32 @@
     </div>
 
     <div class="wrapper-representation-content">
+        {% if representation['algorithm']['params'] %}
         <div class="div-representation-header">
-            {% if representation['algorithm']['params'] %}
-                <div class="header-label">Parametri</div>
-            {% endif %}
-                <div class="header-label">Tecniche NLP</div>
+            <div class="header-label">Parametri</div>
         </div>
         <div class="div-representation-content">
-            {% if representation['algorithm']['params'] %}
-                <div class="hyperparam-table">
-                    {% for param in representation['algorithm']['params'] %}
-                        {{ render_param(param, false) }}
-                    {% endfor %}
-                </div>
-            {% endif %}
-
+            <div class="parameters-table">
+                {% for param in representation['algorithm']['params'] %}
+                    {{ render_param(param, false) }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="div-representation-header">
+            <div class="header-label">NLP</div>
+        </div>
+        <div class="div-representation-content">
             <div class="nlp-table">
                 {% for technique in representation['preprocess'] %}
                     <div class="nlp-technique">
-                        <div class="table-row row-header-nlp">
-                            <div class="table-cell">
-                                {% if 'use' in technique and technique['use'] %}
-                                    <input type="checkbox" name="nlp_technique" checked>
-                                {% else %}
-                                    <input type="checkbox" name="nlp_technique">
-                                {% endif %}
-                            </div>
-                            <div class="table-cell">
-                                <b>{{ technique['name'] }}</b>
-                            </div>
+                        <div class="nlp-name">
+                            {% if 'use' in technique and technique['use'] %}
+                                <input type="checkbox" name="nlp_technique" checked>
+                            {% else %}
+                                <input type="checkbox" name="nlp_technique">
+                            {% endif %}
+                            <label>{{ technique['name'] }}</label>
                         </div>
                         {% for param in technique['params'] %}
                             {{ render_param(param, false) }}

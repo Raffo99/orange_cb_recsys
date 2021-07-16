@@ -3,6 +3,73 @@ function fixName(name, isAlgorithmName) {
         name.trim().replace("\n", "").replace(" ", "_").toLowerCase());
 }
 
+function getClassWithParameters(blockParameter) {
+    const types = {
+        "text": "str",
+        "number": "int",
+        "checkbox": "bool"
+    }
+
+    if (blockParameter.children("[class='block-union-selection']").length > 0) {
+        // Parameter is Union
+        let parameters = [];
+        blockParameter.children("[class='block-union-parameter']").children("[class*='block-parameter']").each(function () {
+            parameters.push(getClassWithParameters($(this)));
+        });
+
+        return {
+            'name': blockParameter.children("[class='block-union-selection']").children("label").text(),
+            'type': 'Union',
+            'value': blockParameter.children("[class='block-union-selection']").children("select").val(),
+            'params': parameters
+        }
+    } else {
+        let blockParameterContainer = (blockParameter.children("[class*='block-parameter-container']"));
+
+        if (blockParameterContainer.children("[class*='block-sub-classes']").length > 0) {
+            // Parameter is Complex with sub classes
+            let subClasses = [];
+            let blockSubClasses = blockParameterContainer.children("[class='block-sub-classes']");
+            blockSubClasses.children("[class*='block-parameter']").each(function () {
+                subClasses.push(getClassWithParameters($(this)));
+            });
+
+            blockParameterContainer.children("[class='block-sub-classes-selection']").children("select").children("option").each(function (index) {
+               subClasses[index]["name"] = $(this).val();
+            });
+
+            return {
+                'name': blockParameterContainer.children("[class='block-sub-classes-selection']").children("label").text(),
+                'type': 'Complex',
+                'value': blockParameterContainer.children("[class='block-sub-classes-selection']").children("select").val(),
+                'sub_classes': subClasses
+            }
+        } else if (blockParameterContainer.children("[class='block-parameter']").length > 0) {
+            // Parameter is Complex with parameters
+            let parameters = [];
+            blockParameterContainer.children("[class*='block-parameter']").each(function () {
+                parameters.push(getClassWithParameters($(this)));
+            });
+
+            return {
+                'name': blockParameterContainer.children("label").text(),
+                'type': 'Complex',
+                'params': parameters
+            }
+        } else {
+            let value = blockParameterContainer.children("input").attr("type") == "checkbox" ?
+                blockParameterContainer.children("input").is(":checked") :
+                blockParameterContainer.children("input").val();
+            // Parameter is Simple
+            return {
+                'name': blockParameterContainer.children("label").text(),
+                'type': types[blockParameterContainer.children("input").attr('type')],
+                'value': value
+            }
+        }
+    }
+}
+
 // Funzione per salvare le rappresentazioni del campo selezionato
 function saveField() {
     let fieldName = $(".active-field").text();
@@ -10,144 +77,43 @@ function saveField() {
 
     $(".div-representation").each(function () {
         let divContent = $(this).find(".div-representation-content");
-        let paramsTable = divContent.children(".hyperparam-table");
+        let paramsTable = divContent.children(".parameters-table");
         let nlpTable = divContent.children(".nlp-table");
 
-        let params = [];
-        let nlpTechniques = [];
         let idRepresentation = $(this).find(".input-name-id").val();
-        const types = {
-            "text": "str",
-            "number": "int",
-            "checkbox": "bool"
-        }
 
-        // TODO: Supportare più tipi di campi
-        let key, val, type;
-        paramsTable.find("[class='table-row']").each(function () {
-            $(this).find("select").each(function () {
-                if (!$(this).hasClass('select-multiparam')) {
-                    key = $(this).attr('name');
-                    val = $(this).val();
-                    type = "options"
-
-                    params.push({
-                        'name': fixName(key, false),
-                        'value': val,
-                        'type': type
-                    })
-                }
-            });
-
-            $(this).find("input").each(function () {
-                if($(this).attr('type') == 'checkbox') val = $(this).prop('checked');
-                else val = $(this).val();
-
-                key = $(this).attr('name');
-                type = types[$(this).attr('type')];
-
-                params.push({
-                    'name': fixName(key, false),
-                    'value': val,
-                    'type': type
-                })
-            });
+        let parameters = [];
+        let nlpTechniques = [];
+        paramsTable.children("[class='block-parameter']").each(function () {
+            parameters.push(getClassWithParameters($(this)));
         });
 
-        let multiParamName, multiParamValue, multiParamArray = [];
-        paramsTable.find(".select-multiparam").each(function () {
-            multiParamName  = $(this).attr('name');
-            multiParamValue = $(this).val();
-            multiParamArray = []
-            $(this).find("option").each(function () {
-                let optionName = $(this).val();
-
-                let paramsMultiParam = []
-                paramsTable.find("[class*='" + optionName + "-" + multiParamName + "']").each(function () {
-                    let nameInput = $(this).find("input").attr('name');
-                    let valueInput = $(this).find("input").val();
-                    let typeInput = $(this).find("input").attr('type');
-
-                    if (optionName == multiParamValue) {
-                        paramsMultiParam.push({
-                            'name': nameInput,
-                            'value': valueInput,
-                            'type': types[typeInput]
-                        });
-                    } else {
-                        paramsMultiParam.push({
-                            'name': nameInput,
-                            'type': types[typeInput]
-                        });
-                    }
-                });
-
-                multiParamArray.push({
-                    'name': optionName,
-                    'params': paramsMultiParam
-                });
-            });
-
-            params.push({
-                'name': multiParamName,
-                'type': 'Union',
-                'value': multiParamValue,
-                'params': multiParamArray,
-            });
-        });
-
-        let nameParam, valueParam, nlpParams;
-        nlpTable.find(".nlp-technique").each(function () {
-            key = $(this).find(".row-header-nlp").find("b").text();
-            val = $(this).find(".row-header-nlp").find(".table-cell:first-child").find("input").prop("checked")
-
-            nlpParams = [];
-
-            $(this).find("[class='table-row']").each(function () {
-                // TODO: Bisogna prendere gli input senza sapere che siano sempre bool
-                valueParam = $(this).find(".table-cell:first-child").find("input").prop("checked");
-                nameParam  = $(this).find(".table-cell:last-child").text();
-
-                nlpParams.push({
-                    'name': fixName(nameParam, false),
-                    'value': valueParam,
-                    'type': 'bool'
-                });
+        nlpTable.children(".nlp-technique").each(function () {
+            let nlpParams = [];
+            $(this).children(".block-parameter").each(function () {
+               nlpParams.push(getClassWithParameters($(this)));
             });
 
             nlpTechniques.push({
-                'name': fixName(key, true),
-                'params': nlpParams,
-                'use': val
-            });
-
-        });
-
-        console.log(params)
-
-        let paramsTemp = params
-        params = []
-        $(paramsTable).find("label").each(function () {
-            let orderParam = paramsTemp.filter(a => a['name'] == $(this).text());
-            if (orderParam.length != 0)
-                params.push(orderParam[0]);
+                'name': $(this).children(".nlp-name").children("label").text(),
+                'use': $(this).children(".nlp-name").children("input").is(":checked"),
+                'params': nlpParams
+            })
         });
 
         representations.push({
             "id": idRepresentation,
             "algorithm": {
                 'name': fixName($(this).find(".representation-algorithm-name").text(), true),
-                'params': params
+                'params': parameters
             },
             'preprocess': nlpTechniques
         });
     });
 
-    //console.log(representations);
     let fd = new FormData();
     fd.append('field_name', fieldName);
     fd.append('representations', JSON.stringify(representations));
-    console.log(representations);
 
     navigator.sendBeacon("/ca-update-representations", fd);
 }
@@ -163,12 +129,35 @@ function loadField(nameField, listToAppend) {
         }),
         success: function (data) {
             listToAppend.append(data);
-            $("[class*='active-multiparam-']").fadeIn();
-            $("[class*='active-multiparam-']").css("display", "table-row");
+            $("[class*='active-block']").fadeIn();
+            $("[class*='active-block']").css("display", "block");
         },
         error: function (jqXhr, textStatus, errorMessage) {
             console.log(errorMessage);
         }
+    });
+}
+
+function changeActiveBlock(selectObj, nameClassBlockParameter) {
+    let nameToActive = selectObj.find('option:selected').attr('value').replace(" ", "");
+    let nameParam = selectObj.attr('name');
+    let blockUnionParameterRelative = selectObj.parent().parent().find(nameClassBlockParameter);
+    let toRemove = blockUnionParameterRelative.find(".active-block");
+    let toAdd = blockUnionParameterRelative.find("[name='" + nameParam + "-" + nameToActive + "']");
+    console.log(nameParam + "-" + nameToActive)
+
+    toRemove.css("display", "");
+    toRemove.removeClass("active-block");
+    toAdd.addClass("active-block");
+    toAdd.fadeIn();
+    toAdd.css("display", "block");
+
+    toAdd.find(".select-union").each(function () {
+        changeActiveBlock($(this), ".block-union-parameter");
+    });
+
+    toAdd.find(".select-subclass").each(function () {
+        changeActiveBlock($(this), ".block-sub-classes")
     });
 }
 
@@ -178,6 +167,16 @@ $(window).on("unload", function () {
 });
 
 $(document).ready(function () {
+    $("#new-representation-options").width($("#new-representation").width() + 20);
+
+    $(window).resize(function() {
+        $("#new-representation-options").width($("#new-representation").width() + 20);
+    });
+
+    $("#new-representation").click(function () {
+        $("#new-representation-options").stop().slideToggle();
+    });
+
     $("[id^='nav-option']").first().addClass('active-field');
     $(".field-container").first().addClass('active-container');
 
@@ -203,33 +202,34 @@ $(document).ready(function () {
     });
 
     // Funzione per aggiungere una nuova rappresentazione
-    $(".select-representation").change(function () {
-        let listToAppend = $(this).parent().find(".representation-list");
+    $("#new-representation-options").on("click", ".new-representation-option", function () {
+        $("#new-representation-options").stop().slideToggle();
+
+        let listToAppend = $(".representation-list");
         let nameField = $(".active-field").attr("id").replace('nav-option-', '');
 
         let numberToChange = $("#nav-option-" + nameField).parent().find(".number-representations");
         numberToChange.text((numberToChange.text() * 1) + 1);
         numberToChange.addClass("active-number");
+        console.log($(this).find("label").text());
 
         $.ajax({
             type: 'POST',
             url: "/_representationformcreator",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify({
-                'algorithm_name': $(this).val(),
+                'algorithm_name': $(this).find("label").text(),
                 'has_representation': false
             }),
             success: function (data) {
                 listToAppend.append(data);
-                $("[class*='active-multiparam-']").fadeIn();
-                $("[class*='active-multiparam-']").css("display", "table-row");
+                $("[class*='active-block']").fadeIn();
+                $("[class*='active-block-']").css("display", "block");
             },
             error: function (jqXhr, textStatus, errorMessage) {
                 console.log(errorMessage);
             }
         });
-
-        $(this).val("default_option");
     });
 
     // Funzione per chiudere e aprire le rappresentazioni
@@ -262,22 +262,19 @@ $(document).ready(function () {
 
         $(this).parent().parent().remove();
         let numberToChange = $(".active-field").parent().find(".number-representations");
-        numberToChange.text((numberToChange.text() * 1) - 1)
+        numberToChange.text((numberToChange.text() * 1) - 1);
     });
 
     // Funzione per i parametri con valori complessi
-    $(".representation-list").on("click", ".select-multiparam", function() {
+    $(".representation-list").on("click", ".select-union", function() {
         $(this).change(function () {
-            let nameToActive = $(this).find('option:selected').attr('value').replace(" ", "");
-            let nameParam = $(this).attr('name');
-            let toRemove = $(this).parent().parent().parent().find(".active-multiparam-" + nameParam);
-            let toAdd = $(this).parent().parent().parent().find("." + nameToActive + "-" + nameParam);
-
-            toRemove.css("display", "");
-            toRemove.removeClass("active-multiparam-" + nameParam);
-            toAdd.addClass('active-multiparam-' + nameParam);
-            toAdd.fadeIn();
-            toAdd.css("display", "table-row");
+            changeActiveBlock($(this), ".block-union-parameter");
         });
     });
+
+    $(".representation-list").on("click", ".select-subclass", function () {
+        $(this).change(function () {
+            changeActiveBlock($(this), ".block-sub-classes")
+        });
+    })
 });

@@ -1,85 +1,111 @@
-{% macro render_param(param, multiparam) %}
-    {% if not multiparam %}
-        <div class="table-row">
+{% macro render_param(param, union_parameter) %}
+    {% if not union_parameter %}
+        <div class="block-parameter">
     {% endif %}
-        {% if param['type'] == "bool" %}
-            <div class="table-cell">
-                {% if param['value'] %}
-                    <input type="checkbox" name="{{ param['name'] }}" checked>
-                {% else %}
-                    <input type="checkbox" name="{{ param['name'] }}">
+
+    {% if param['type'] == "bool" %}
+        <div class="block-parameter-container">
+            {% if param['value'] %}
+                <input type="checkbox" name="{{ param['name'] }}" checked>
+            {% else %}
+                <input type="checkbox" name="{{ param['name'] }}">
+            {% endif %}
+            <label>{{ param['name'] }}</label>
+        </div>
+    {% endif %}
+
+    {% if param['type'] == "str" or param['type'] == "NoneType" %}
+        <div class="block-parameter-container">
+            <label>{{ param['name'] }}</label>
+            {% if "value" in param %}
+                <input type="text" name="{{ param['name'] }}" value="{{ param['value'] }}">
+            {% else %}
+                <input type="text" name="{{ param['name'] }}">
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if param['type'] == "int" or param['type'] == "float" %}
+        <div class="block-parameter-container">
+            <label>{{ param['name'] }}</label>
+            {% if "value" in param %}
+                <input autocomplete="off" type="number" name="{{ param['name'] }}" value="{{ param['value'] }}">
+            {% else %}
+                <input autocomplete="off" type="number" name="{{ param['name'] }}">
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if param['type'] == "Complex" %}
+            <div class="block-parameter-container">
+                {% if ('sub_classes' in param and param['sub_classes']|length != 0)
+                        or ('params' in param and param['params']|length != 0) %}
+                    {% if 'sub_classes' in param %}
+                        <div class="block-sub-classes-selection">
+                            <label>{{ param['name'] }}</label>
+                            <select class="select-subclass" name="{{ param['name'] }}">
+                                {% for sub_class in param['sub_classes'] %}
+                                    {% if ("value" in param) and (param['value'] == sub_class['name']) %}
+                                        <option value="{{ sub_class['name'] }}" selected>{{ sub_class['name'] }}</option>
+                                    {% else %}
+                                        <option value="{{ sub_class['name'] }}">{{ sub_class['name'] }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="block-sub-classes">
+                            {% for sub_class in param['sub_classes'] %}
+                                {% if ("value" in param and param['value'] == sub_class['name'])
+                                        or (not "value" in param and loop.index == 1) %}
+                                    <div class="block-parameter active-block" name="{{ param['name'] }}-{{ sub_class['name'] }}">
+                                {% else %}
+                                    <div class="block-parameter" name="{{ param['name'] }}-{{ sub_class['name'] }}">
+                                {% endif %}
+                                    {{ render_param(sub_class, true) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if 'params' in param %}
+                        <label>{{ param['name'] }}</label>
+                        {% for parm in param['params'] %}
+                            {{ render_param(parm, false) }}
+                        {% endfor %}
+                    {% endif %}
                 {% endif %}
             </div>
-            <div class="table-cell">
-                <label>{{ param['name'] }}</label>
-            </div>
-        {% else %}
-            <div class="table-cell">
-                <label>{{ param['name'] }}</label>
-            </div>
-        {% endif %}
+    {% endif %}
 
-        {% if param['type'] == "str" %}
-            <div class="table-cell">
-                {% if "value" in param %}
-                    <input type="text" name="{{ param['name'] }}" value="{{ param['value'] }}">
-                {% else %}
-                    <input type="text" name="{{ param['name'] }}">
-                {% endif %}
-            </div>
-        {% endif %}
-
-        {% if param['type'] == "Integer" or param['type'] == "Float" %}
-            <div class="table-cell">
-                {% if "value" in param %}
-                    <input autocomplete="off" type="number" name="{{ param['name'] }}" value="{{ param['value'] }}">
-                {% else %}
-                    <input autocomplete="off" type="number" name="{{ param['name'] }}">
-                {% endif %}
-            </div>
-        {% endif %}
-
-        {% if param['type'] == "File" %}
-            <div class="table-cell">
-                <input type="file" name="{{ param['name'] }}">
-            </div>
-        {% endif %}
-
-        {% if param['type'] == "Union" %}
-            <div class="table-cell">
-                <select class="select-multiparam" name="{{ param['name'] }}">
-                    {% for possible_value in param['params'] %}
-                        {% if ("value" in param) and (param['value'] == possible_value['name']) %}
-                            <option value="{{ possible_value['name'] }}" selected>{{ possible_value['name'] }}</option>
-                        {% else %}
-                            <option value="{{ possible_value['name'] }}">{{ possible_value['name'] }}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-            </div>
+    {% if param['type'] == "Union" %}
+        <div class="block-union-selection">
+            <label>{{ param['name'] }}</label>
+            <select class="select-union" name="{{ param['name'] }}">
                 {% for possible_value in param['params'] %}
-                    {% set outer_loop = loop %}
-                    {% for double_param in possible_value['params'] %}
-                        {% if "value" in param %}
-                            {% if param['value'] == possible_value["name"] %}
-                                <div class="table-row tr-multiparam {{ possible_value['name'].replace(' ', '') }}-{{ param['name'] }} active-multiparam-{{ param['name'] }}">
-                            {% else %}
-                                <div class="table-row tr-multiparam {{ possible_value['name'].replace(' ', '') }}-{{ param['name'] }}">
-                            {% endif %}
-                        {% else %}
-                            {% if outer_loop.index == 1 %}
-                                <div class="table-row tr-multiparam {{ possible_value['name'].replace(' ', '') }}-{{ param['name'] }} active-multiparam-{{ param['name'] }}">
-                            {% else %}
-                                <div class="table-row tr-multiparam {{ possible_value['name'].replace(' ', '') }}-{{ param['name'] }}">
-                            {% endif %}
-                        {% endif %}
-                        {{  render_param(double_param, possible_value['name']) }}
-                            </div>
-                    {% endfor %}
+                    {% if ("value" in param) and (param['value'] == possible_value['name']) %}
+                        <option value="{{ possible_value['name'] }}" selected>{{ possible_value['name'] }}</option>
+                    {% else %}
+                        <option value="{{ possible_value['name'] }}">{{ possible_value['name'] }}</option>
+                    {% endif %}
                 {% endfor %}
-        {% endif %}
-    {% if not multiparam and param['type'] != "Union" %}
+            </select>
+        </div>
+        <div class="block-union-parameter">
+            {% for possible_value in param['params'] %}
+                {% if ("value" in param and param['value'] == possible_value['name'])
+                                                        or (not "value" in param and loop.index == 1) %}
+                    <div class="block-parameter active-block" name="{{ param['name'] }}-{{ possible_value['name'] }}">
+                        {{ render_param(possible_value, true) }}
+                    </div>
+                {% else %}
+                    <div class="block-parameter" name="{{ param['name'] }}-{{ possible_value['name'] }}">
+                        {{ render_param(possible_value, true) }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not union_parameter %}
         </div>
     {% endif %}
 {% endmacro %}
