@@ -124,7 +124,7 @@ def get_class_with_parameters(_class, _class_name):
         for possible_class in _class.__args__:
             sub_class_name = possible_class.__name__
             class_to_append = get_class_with_parameters(possible_class, sub_class_name)
-            if class_to_append.__name__ != 'NoneType' and 'name' in class_to_append:
+            if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                 possible_classes.append(class_to_append)
 
         # In the end the method can build the return class object with name, type and parameters list
@@ -155,7 +155,7 @@ def get_class_with_parameters(_class, _class_name):
                             continue
                         sub_class_name = sub_class.__name__
                         class_to_append = get_class_with_parameters(sub_class, sub_class_name)
-                        if class_to_append.__name__ != 'NoneType' and 'name' in class_to_append:
+                        if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                             sub_classes.append(class_to_append)
 
                     # Then the method can build the return class
@@ -176,7 +176,7 @@ def get_class_with_parameters(_class, _class_name):
                         class_parameters = []
                         for class_param in list(signature(_class).parameters.items()):
                             class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0])
-                            if class_to_append.__name__ != 'NoneType' and 'name' in class_to_append:
+                            if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                                 class_parameters.append(class_to_append)
 
                         # Then the method can build the return class
