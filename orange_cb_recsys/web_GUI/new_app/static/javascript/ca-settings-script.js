@@ -17,6 +17,10 @@ function getClassWithParameters(blockParameter) {
             parameters.push(getClassWithParameters($(this)));
         });
 
+        blockParameter.children("[class='block-union-selection']").children("select").children("option").each(function (index) {
+            parameters[index]["name"] = $(this).val();
+        });
+
         return {
             'name': blockParameter.children("[class='block-union-selection']").children("label").text(),
             'type': 'Union',
