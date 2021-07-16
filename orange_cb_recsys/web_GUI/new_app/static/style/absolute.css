@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400&display=swap');
+
 html {
-    font-family: "Lucida Sans", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     background-color: white;
 }
 
@@ -10,6 +12,8 @@ html {
     border: 2px solid black;
     padding: 5px;
     border-radius: 100%;
+    background-color: #f1f1f1!important;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
 }
 
 #back-button {
@@ -19,6 +23,8 @@ html {
     border: 2px solid black;
     padding: 5px;
     border-radius: 100%;
+    background-color: #f1f1f1!important;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
 }
 
 #header {

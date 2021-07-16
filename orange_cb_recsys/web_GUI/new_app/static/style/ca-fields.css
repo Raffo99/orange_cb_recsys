@@ -16,6 +16,7 @@
 }
 
 #ca-form-fields-content {
+    background: #f1f1f1;
     border: 2px solid black;
     overflow: auto;
     min-height: 55vh;
@@ -29,6 +30,7 @@
 }
 
 #ca-form-fields-header {
+    background: #f1f1f1;
     border: 2px solid black;
     border-bottom-width: 0px;
     padding-bottom: 15px;
@@ -38,10 +40,10 @@
 }
 
 table {
-    width: -moz-calc(100% - 25px);
-    width: -webkit-calc(100% - 25px);
-    width: -o-calc(100% - 25px);
-    width: calc(100% - 25px);
+    width: -moz-calc(100% - 10px);
+    width: -webkit-calc(100% - 10px);
+    width: -o-calc(100% - 10px);
+    width: calc(100% - 10px);
 }
 
 #ca-form-fields-content td {
@@ -70,4 +72,24 @@ table {
 
 #sub-header {
     margin-bottom: 2%;
+}
+
+::-webkit-scrollbar {
+    border-left: 2px solid black;
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    border-left: 2px solid black;
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    border-left: 2px solid black;
+    background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    border-left: 2px solid black;
+    background: #555;
 }
