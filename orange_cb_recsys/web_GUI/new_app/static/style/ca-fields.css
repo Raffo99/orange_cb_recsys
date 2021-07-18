@@ -23,6 +23,9 @@
     max-height: 55vh;
     margin-top: 0px;
     width: 100%;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 #ca-form-fields-content table {
@@ -37,6 +40,9 @@
     margin-bottom: 0px;
     width: 100%;
     font-weight: bold;
+    box-shadow: 0 0px 10px 0 rgb(0 0 0 / 20%), 0 0px 20px 0 rgb(0 0 0 / 19%);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 table {
@@ -71,25 +77,34 @@ table {
 }
 
 #sub-header {
-    margin-bottom: 2%;
+    margin-bottom: 10px;
 }
 
 ::-webkit-scrollbar {
     border-left: 2px solid black;
     width: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {
     border-left: 2px solid black;
     background: #f1f1f1;
+    border-bottom-right-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
     border-left: 2px solid black;
     background: #888;
+    border-bottom-right-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     border-left: 2px solid black;
     background: #555;
+    border-bottom-right-radius: 10px;
+}
+
+input[type=checkbox] {
+    width: 20px;
+    height: 20px;
 }

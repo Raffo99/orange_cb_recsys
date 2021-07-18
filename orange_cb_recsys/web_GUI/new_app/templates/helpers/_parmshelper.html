@@ -36,42 +36,40 @@
         </div>
     {% endif %}
 
-    {% if param['type'] == "Complex" %}
+    {% if param['type'] == "Complex" and (('sub_classes' in param and param['sub_classes']|length != 0)
+                or ('params' in param and param['params']|length != 0)) %}
             <div class="block-parameter-container">
-                {% if ('sub_classes' in param and param['sub_classes']|length != 0)
-                        or ('params' in param and param['params']|length != 0) %}
-                    {% if 'sub_classes' in param %}
-                        <div class="block-sub-classes-selection">
-                            <label>{{ param['name'] }}</label>
-                            <select class="select-subclass" name="{{ param['name'] }}">
-                                {% for sub_class in param['sub_classes'] %}
-                                    {% if ("value" in param) and (param['value'] == sub_class['name']) %}
-                                        <option value="{{ sub_class['name'] }}" selected>{{ sub_class['name'] }}</option>
-                                    {% else %}
-                                        <option value="{{ sub_class['name'] }}">{{ sub_class['name'] }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="block-sub-classes">
-                            {% for sub_class in param['sub_classes'] %}
-                                {% if ("value" in param and param['value'] == sub_class['name'])
-                                        or (not "value" in param and loop.index == 1) %}
-                                    <div class="block-parameter active-block" name="{{ param['name'] }}-{{ sub_class['name'] }}">
-                                {% else %}
-                                    <div class="block-parameter" name="{{ param['name'] }}-{{ sub_class['name'] }}">
-                                {% endif %}
-                                    {{ render_param(sub_class, true) }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {% if 'params' in param %}
+                {% if 'sub_classes' in param %}
+                    <div class="block-sub-classes-selection">
                         <label>{{ param['name'] }}</label>
+                        <select class="select-subclass" name="{{ param['name'] }}">
+                            {% for sub_class in param['sub_classes'] %}
+                                {% if ("value" in param) and (param['value'] == sub_class['name']) %}
+                                    <option value="{{ sub_class['name'] }}" selected>{{ sub_class['name'] }}</option>
+                                {% else %}
+                                    <option value="{{ sub_class['name'] }}">{{ sub_class['name'] }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="block-sub-classes">
+                        {% for sub_class in param['sub_classes'] %}
+                            {% if ("value" in param and param['value'] == sub_class['name'])
+                                        or (not "value" in param and loop.index == 1) %}
+                                <div class="block-parameter active-block" name="{{ param['name'] }}-{{ sub_class['name'] }}">
+                            {% else %}
+                                <div class="block-parameter" name="{{ param['name'] }}-{{ sub_class['name'] }}">
+                            {% endif %}
+                                {{ render_param(sub_class, true) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if 'params' in param %}
+                    <label>{{ param['name'] }}</label>
                         {% for parm in param['params'] %}
                             {{ render_param(parm, false) }}
                         {% endfor %}
-                    {% endif %}
                 {% endif %}
             </div>
     {% endif %}

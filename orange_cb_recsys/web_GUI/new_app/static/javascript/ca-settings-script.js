@@ -1,7 +1,5 @@
-function fixName(name, isAlgorithmName) {
-    return (isAlgorithmName ? name.trim().replace("\n", "").replace(" ", "_") :
-        name.trim().replace("\n", "").replace(" ", "_").toLowerCase());
-}
+import { changeActiveBlock } from "./utils-functions.js";
+import { fixName } from "./utils-functions.js";
 
 function getClassWithParameters(blockParameter) {
     const types = {
@@ -120,6 +118,7 @@ function saveField() {
     fd.append('representations', JSON.stringify(representations));
 
     navigator.sendBeacon("/ca-update-representations", fd);
+    console.log("Inviato");
 }
 
 function loadField(nameField, listToAppend) {
@@ -139,29 +138,6 @@ function loadField(nameField, listToAppend) {
         error: function (jqXhr, textStatus, errorMessage) {
             console.log(errorMessage);
         }
-    });
-}
-
-function changeActiveBlock(selectObj, nameClassBlockParameter) {
-    let nameToActive = selectObj.find('option:selected').attr('value').replace(" ", "");
-    let nameParam = selectObj.attr('name');
-    let blockUnionParameterRelative = selectObj.parent().parent().find(nameClassBlockParameter);
-    let toRemove = blockUnionParameterRelative.find(".active-block");
-    let toAdd = blockUnionParameterRelative.find("[name='" + nameParam + "-" + nameToActive + "']");
-    console.log(nameParam + "-" + nameToActive)
-
-    toRemove.css("display", "");
-    toRemove.removeClass("active-block");
-    toAdd.addClass("active-block");
-    toAdd.fadeIn();
-    toAdd.css("display", "block");
-
-    toAdd.find(".select-union").each(function () {
-        changeActiveBlock($(this), ".block-union-parameter");
-    });
-
-    toAdd.find(".select-subclass").each(function () {
-        changeActiveBlock($(this), ".block-sub-classes")
     });
 }
 
@@ -193,12 +169,12 @@ $(document).ready(function () {
     // Funzione per cambiare da un campo all'altro, salvare i dati e caricare l'altro campo
     $(".wrapper-option-number").click(function () {
         saveField();
+        console.log("Finito")
 
         let listToAppend = $(".representation-list");
         let nextFieldName = $(this).find("[id^='nav-option']").text();
 
         listToAppend.empty();
-
         loadField(nextFieldName, listToAppend);
 
         $("[class$='active-field']").removeClass("active-field");
@@ -243,11 +219,24 @@ $(document).ready(function () {
         else $(this).text("–");
     });
 
+    let selectedRepresentation;
     // Funzione per cancellare una rappresentazione
     $(".representation-list").on("click", ".delete-representation", function () {
+        $("#overlay").fadeIn();
+        $("#overlay").css("display", "flex");
+        selectedRepresentation = $(this);
+    });
+
+    $("#dialog-no").click(function () {
+        $("#overlay").fadeOut();
+    });
+
+    $("#dialog-yes").click(function () {
+        $("#overlay").fadeOut();
         saveField();
 
-        let indexRepresentation = $(this).parent().parent().index();
+        let indexRepresentation = selectedRepresentation.parent().parent().index();
+        console.log(indexRepresentation)
         let fieldName = $(".active-field").attr("id").replace('nav-option-', '');
 
         $.ajax({
@@ -264,21 +253,23 @@ $(document).ready(function () {
             }
         });
 
-        $(this).parent().parent().remove();
-        let numberToChange = $(".active-field").parent().find(".number-representations");
-        numberToChange.text((numberToChange.text() * 1) - 1);
+        selectedRepresentation.parent().parent().slideToggle(function () {
+            $(this).remove();
+            let numberToChange = $(".active-field").parent().find(".number-representations");
+            numberToChange.text((numberToChange.text() * 1) - 1);
+        });
     });
 
     // Funzione per i parametri con valori complessi
     $(".representation-list").on("click", ".select-union", function() {
         $(this).change(function () {
-            changeActiveBlock($(this), ".block-union-parameter");
+            changeActiveBlock($(this));
         });
     });
 
     $(".representation-list").on("click", ".select-subclass", function () {
         $(this).change(function () {
-            changeActiveBlock($(this), ".block-sub-classes")
+            changeActiveBlock($(this));
         });
     })
 });

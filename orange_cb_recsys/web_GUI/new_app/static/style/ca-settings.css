@@ -1,10 +1,10 @@
-
 #nav-bar-fields {
     border: 2px solid black;
     height: 69vh;
     overflow: auto;
     background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    border-radius: 10px;
 }
 
 #nav-bar-fields ul {
@@ -21,7 +21,7 @@
     padding: 10px;
 }
 
-button {
+#div-content-field button {
     background-color: #f1f1f1!important;
 }
 
@@ -30,6 +30,7 @@ button {
     height: 69vh;
     background-color: #f1f1f1!important;
     box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    border-radius: 10px;
 }
 
 .field-container {
@@ -54,7 +55,6 @@ button {
     position: relative;
     z-index: 2;
     overflow-y: auto;
-    margin-top: 10px;
     border-top: 2px solid black;
     height: -moz-calc(100% - 63px);
     height: -webkit-calc(100% - 63px);
@@ -70,14 +70,18 @@ button {
     border: 0px;
 }
 
+#wrapper-new-representation {
+    margin: 10px;
+}
+
 #new-representation {
     padding: 10px;
     text-align: center;
-    margin: 10px 10px 0px 10px;
     background-color: #C2C2C2;
     border: 2px solid black;
     transition: 0.3s;
     font-size: 17px;
+    height: 45px;
 }
 
 #new-representation:hover {
@@ -86,8 +90,11 @@ button {
     font-size: 18px;
 }
 
+#new-representation label:hover {
+    cursor: pointer;
+}
+
 #new-representation-options {
-    margin: 0px 10px 0px 10px;
     border: 2px solid black;
     border-top: 0px;
     height: 40%;
@@ -181,45 +188,12 @@ button {
     font-size: 17px;
 }
 
-input[type=checkbox] {
-    width: 15px;
-    height: 15px;
-    vertical-align:middle;
-}
-
-.nlp-technique > .block-parameter:first-child {
-    border: 2px solid red;
-}
-
-.table-row {
-    display: table-row;
-}
-
 .nlp-technique .row-header-nlp {
     border-bottom: 2px solid black;
 }
 
 .nlp-technique {
     border: 2px solid black;
-}
-
-.table-row .table-cell:last-child {
-    flex: 2;
-    order: 2;
-    width: 100%;
-}
-
-.table-row .table-cell:first-child {
-    width: auto;
-    justify-content: center;
-    align-items: center;
-}
-
-.table-cell {
-    display: table-cell;
-    padding: 5px;
-    box-sizing: border-box;
-    vertical-align: middle;
 }
 
 .row-header-nlp td:first-child {
@@ -331,10 +305,6 @@ input[type=checkbox] {
     display: none;
 }
 
-.tr-multiparam .table-cell {
-    padding-left: 20px;
-}
-
 .delete-representation {
     width: 30px;
     order: 2;
@@ -361,6 +331,67 @@ input[type=checkbox] {
     margin-left: 5px;
 }
 
-#header {
-    margin-top: 2%;
+#wrapper-continue img {
+    width: 65px;
+    margin: 0px 0px 0px 10px;
+}
+
+.block-sub-classes > .block-parameter > .block-parameter-container > .block-parameter {
+    margin-left: 0px;
+}
+
+.block-union-parameter {
+    margin-top: 5px;
+}
+
+#overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    display: none;
+}
+
+#dialog {
+    width: 500px;
+    height: 170px;
+    border: 2px solid black;
+    background-color: #f1f1f1;
+    margin: auto;
+    vertical-align: middle;
+    border-radius: 10px;
+}
+
+#dialog-header {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 2px solid black;
+}
+
+#dialog-question {
+    margin: 20px 0px 20px;
+}
+
+#dialog-buttons {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#dialog-buttons button {
+    width: 70px;
+    height: 40px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    transition: 0.5s;
+}
+
+#dialog-buttons button:hover {
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
 }

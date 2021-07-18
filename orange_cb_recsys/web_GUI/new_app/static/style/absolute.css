@@ -5,15 +5,13 @@ html {
     background-color: white;
 }
 
+#home-button img {
+    width: 100%;
+}
+
 #home-button {
-    position: absolute;
-    top: 5vh;
-    left: 5vh;
-    border: 2px solid black;
-    padding: 5px;
-    border-radius: 100%;
-    background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+    border-bottom: 2px solid black;
+    padding: 6px;
 }
 
 #back-button {
@@ -24,7 +22,6 @@ html {
     padding: 5px;
     border-radius: 100%;
     background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
 }
 
 #header {
@@ -92,8 +89,9 @@ table, tr, td {
 }
 
 input[type=checkbox] {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
+    vertical-align:middle;
 }
 
 input[type=radio] {
@@ -103,4 +101,163 @@ input[type=radio] {
 
 .module {
     height: 100%;
+}
+
+#nav-bar-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8vh;
+    height: 100%;
+    border-right: 2px solid black;
+    display: flex;
+    flex-direction: column;
+    background-color: #f1f1f1!important;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+}
+
+.module-status {
+    border-bottom: 2px solid black;
+    background-color: #f1f1f1;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.module-status:last-child {
+    border-bottom: 0px;
+}
+
+.pages {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.page {
+    margin: 10px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.page:hover {
+    cursor: pointer;
+}
+
+.page label {
+    margin-left: 2px;
+    position: absolute;
+    background-color: #f1f1f1;
+    border: 1px solid black;
+    padding: 5px;
+    left: 30px;
+    top: -5px;
+    display: none;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+.page-status {
+    border: 1px solid black;
+    background-color: #f1f1f1;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    position: relative;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+}
+
+.status {
+    border: 1px black solid;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -7.5px 0px 0px -7.5px;
+}
+
+.complete {
+    background-color: #45E620;
+}
+
+.incomplete {
+    background-color: #F7F7F2;
+}
+
+#content-analyzer .current {
+    background-color: #F79E02;
+}
+
+#recsys .current {
+    background-color: #4285F4;
+}
+
+.disabled {
+    background-color: #595260;
+}
+
+#nav-bar-left > label {
+    text-align: center;
+    background-color: #f1f1f1;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.module-status > label {
+    writing-mode: tb-rl;
+    transform: rotate(-180deg);
+    text-align: center;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+#wrapper-continue {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#wrapper-continue button {
+    padding: 10px;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.5s;
+}
+
+#wrapper-continue button span {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    transition: 0.5s;
+}
+
+#wrapper-continue button span:after {
+    content: '🡆';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+#wrapper-continue button:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+
+#wrapper-continue button:hover span {
+    padding-right: 25px;
 }

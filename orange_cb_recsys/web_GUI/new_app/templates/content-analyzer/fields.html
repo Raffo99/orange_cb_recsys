@@ -1,4 +1,5 @@
 {% extends "base-settings-module.html" %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
 
 {% block title %}
     Content Analyzer
@@ -6,8 +7,6 @@
 
 {% block header_import %}
     <title>Impostazioni Content Analyzer</title>
-
-    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
     <script type=text/javascript src="{{ url_for('static', filename='javascript/ca-fields-script.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-fields.css') }}">
 {% endblock %}
@@ -17,41 +16,48 @@
     <hr>
 {% endblock %}
 
-{% block sub_header %} <h4>Impostazioni Campi Dataset</h4> {% endblock %}
+{% block sub_header %} <h4>Setting Fields Dataset</h4> {% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Fields", "ContentAnalyzer") }}
+{% endblock %}
 
 {% block form_content %}
-    <form class="ca-form" method="post" action="{{ url_for('ca_fields') }}">
-    <div class="row">
-        <div class="col-4"></div>
-        <div class="col-4">
-            <div id="ca-form-fields-header">
-                <table>
-                    <tr>
-                        <td><label class="table-id-label">Nome Campo</label></td>
-                        <td><label class="table-id-label">Analizza Campo</label></td>
-                        <td><label class="table-id-label">Campo ID</label></td>
-                    </tr>
-                </table>
-            </div>
-            <div id="ca-form-fields-content">
-                <table>
-                    {% for field in fields %}
+    <form id="main-form" class="ca-form" method="post" action="{{ url_for('ca_fields') }}">
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4">
+                <div id="ca-form-fields-header">
+                    <table>
                         <tr>
-                            <td>{{ field }}</td>
-                            <td><input type="checkbox" name="{{ field }}" id="{{ field }}_use"></td>
-                            <td><input type="checkbox" name="id_dataset" id="{{ field }}_id" value="{{ field }}"></td>
+                            <td><label class="table-id-label">Field Name</label></td>
+                            <td><label class="table-id-label">Use Field</label></td>
+                            <td><label class="table-id-label">Is Field ID</label></td>
                         </tr>
-                    {% endfor %}
-                </table>
+                    </table>
+                </div>
+                <div id="ca-form-fields-content">
+                    <table>
+                        {% for field in fields %}
+                            <tr>
+                                <td>{{ field }}</td>
+                                <td><input type="checkbox" name="{{ field }}__{{ loop.index }}" id="{{ field }}"></td>
+                                <td><input type="checkbox" name="{{ field }}__fieldid" id="{{ field }}__fieldid"></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         </div>
-        <div class="col-2"></div>
-    </div>
-    <div class="row">
-        <div class="col-4"></div>
-        <div class="col-4">
-            <input type="submit" value="Continua" class="button" id="continue-button">
-        </div>
-    </div>
     </form>
+         <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4">
+                <div id="wrapper-continue">
+                    <button type="submit" form="main-form">
+                        <span>Save and continue to next section</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 {% endblock %}

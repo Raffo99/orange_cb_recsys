@@ -3,12 +3,16 @@
     <title>{% block title %} {% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/nav-bar-left-script.js') }}"></script>
     {% block header_import %} {% endblock %}
 </head>
 <body>
+    <div id="nav-bar-left">
+        {% block nav_bar_left %} {% endblock %}
+    </div>
     <div id="box">
         <div id="header">
-                <a href="{{ url_for('index') }}"><img id="home-button" src="{{ url_for('static', filename='icons/home-icon.svg') }}"></a>
                 {% block header %} {% endblock %}
         </div>
         <div id="sub-header">
