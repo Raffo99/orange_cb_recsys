@@ -1,7 +1,25 @@
-#div-content-representations {
+.div-content-algorithms {
     border: 2px solid black;
-    height: 75vh;
+    height: 69vh;
     overflow-y: auto;
+    background-color: #f1f1f1!important;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+}
+
+.col-8 {
+    transition: 0.3s;
+}
+
+.col-6 {
+    transition: 0.3s;
+}
+
+.div-content-representations {
+    border: 2px solid black;
+    height: 69vh;
+    overflow-y: auto;
+    background-color: #f1f1f1!important;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
 }
 
 .field-wrapper {
@@ -11,7 +29,13 @@
     margin-top: -2px;
 }
 
-#header-representations {
+.header-representations {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px 0 10px 0;
+}
+
+.header-algorithms {
     text-align: center;
     font-weight: bold;
     padding: 10px 0 10px 0;
@@ -44,4 +68,58 @@
 .field-name {
     text-align: center;
     font-weight: bold;
+}
+
+.block-parameter {
+    margin: 10px;
+}
+
+.block-union-parameter > .block-parameter {
+    display: none;
+}
+
+.block-sub-classes > .block-parameter {
+    display: none;
+}
+
+.block-algorithm {
+    display: none;
+}
+
+.block-algorithms-selection {
+    padding: 10px;
+    border-bottom: 2px solid black;
+    font-size: 17px;
+    font-weight: bold;
+    display: flex;
+    align-items: baseline;
+}
+
+.block-algorithms-selection > select {
+    padding: 5px;
+    margin-left: 10px;
+}
+
+.block-algorithms {
+    margin: 5px;
+}
+
+.block-sub-classes > .block-parameter > .block-parameter-container {
+
+}
+
+input[type=text], input[type=number] {
+    margin-left: 10px;
+}
+
+.block-sub-classes > .block-parameter > .block-parameter-container > .block-parameter {
+    margin-left: 0px;
+}
+
+.block-union-parameter {
+    margin-top: 5px;
+}
+
+.block-sub-classes > .block-parameter {
+    padding: 5px 0px 0px 5px;
 }

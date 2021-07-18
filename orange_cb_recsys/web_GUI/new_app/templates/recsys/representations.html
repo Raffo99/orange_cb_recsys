@@ -1,12 +1,15 @@
 {% extends "base-settings-module.html" %}
+{% from "helpers/_parmshelper.html" import render_param %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
 
 {% block title %}
-    Content Analyzer
+    Recommender System
 {% endblock %}
 
 {% block header_import %}
     <title>Impostazioni Content Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/recsys-representations.css') }}">
+    <script type=module src="{{ url_for('static', filename='javascript/recsys-representations-script.js') }}"></script>
 {% endblock %}
 
 {% block header %}
@@ -17,11 +20,37 @@
 
 {% block sub_header %} <h4>Setting Representations</h4> {% endblock %}
 
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Representations", "RecSys") }}
+{% endblock %}
+
 {% block form_content %}
     <div class="col-2"></div>
-    <div class="col-8">
-        <div id="header-representations">FIELDS WITH REPRESENTATIONS</div>
-        <div id="div-content-representations">
+    <div class="col-6">
+        <div class="header-algorithms">RECOMMENDER ALGORITHMS</div>
+        <div class="div-content-algorithms">
+            <div class="block-algorithms-selection">
+                <label>Algorithm Type</label>
+                <select class="select-algorithm" name="algtype">
+                    {% for algorithm in algorithms %}
+                        <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="block-algorithms">
+                {% for algorithm in algorithms %}
+                <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                    {% for param in algorithm['params'] %}
+                        {{ render_param(param, false) }}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-2">
+        <div class="header-representations">FIELDS WITH REPRESENTATIONS</div>
+        <div class="div-content-representations">
             <div class="representations-list">
                 {% for field in fields_representations.items() %}
                     <div class="field-wrapper">

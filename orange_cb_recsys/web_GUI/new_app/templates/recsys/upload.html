@@ -1,12 +1,12 @@
 {% extends "base-settings-module.html" %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
 
 {% block title %}
-    Recsys
+    Recommender System
 {% endblock %}
 
 {% block header_import %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style/recsys-upload.css') }}">
-    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
     <script type=text/javascript src="{{ url_for('static', filename='javascript/recsys-upload-script.js') }}"></script>
 {% endblock %}
 
@@ -15,6 +15,10 @@
 {% block header %}
     <h1>RECOMMENDER SYSTEM</h1>
     <hr>
+{% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Upload", "RecSys") }}
 {% endblock %}
 
 {% block form_content %}
