@@ -25,7 +25,7 @@
     <div class="row">
         <div class="col-4"></div>
         <div class="col-4">
-            <form class="recsys-form-upload"method="post" enctype=multipart/form-data>
+            <form id="recsys-form-upload" method="post" enctype=multipart/form-data>
                 <table>
                     <tr>
                         <td class="form-label"> Output directory name </td>
@@ -36,14 +36,25 @@
                         <td> <input type="text" id="pathContent" name="pathContent"> </td>
                     </tr>
                 </table>
-                <input type="image" src="{{ url_for('static', filename='/icons/arrow-right-icon.svg') }}" alt="Submit">
             </form>
-            <div class="wrapper-errors">
-                {% for error in list_errors %}
-                    <div class="div-error">
-                        {{ error | safe }}
-                    </div>
-                {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="wrapper-errors">
+            {% for error in list_errors %}
+            <div class="div-error">
+                {{ error | safe }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="wrapper-continue">
+                <button form="recsys-form-upload" type="submit" >
+                    <span>Save and continue to next section</span>
+                </button>
             </div>
         </div>
     </div>

@@ -55,7 +55,7 @@
                 {% for field in fields_representations.items() %}
                     <div class="field-wrapper">
                         <div class="field-name">{{ field[0] }}</div>
-                            {% if field[1].get_internal_index()|length != 1 %}
+                            {% if field[1].get_external_index()|length > 0 %}
                                 <hr>
                                 <div class="representations-list">
                                 {% for representations in field[1].get_external_index() %}

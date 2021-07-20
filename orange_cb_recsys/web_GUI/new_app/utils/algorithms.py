@@ -134,12 +134,12 @@ def get_class_with_parameters(_class, _class_name):
             'params': possible_classes
         }
     else:
-        # TODO: Remove this, i use this for debug the recsys module (problems with the recurion of this method)
+        # TODO: Remove this, i use this for debug the recsys module (problems with the recursion of this method)
         if type(_class).__name__ == "str":
             return
 
-        # If the class is a simple class (ex. string, int, float, etc) the method can simple build the return class object
         try:
+            # If the class is a simple class (ex. string, int, float, etc) the method can simple build the return class object
             if _class.__name__ in simple_classes:
                 return_class = {
                     'name': _class_name,
@@ -173,7 +173,9 @@ def get_class_with_parameters(_class, _class_name):
                     else:
                         if _class_name == "kwargs" or _class_name == "lang":
                             return {}
+
                         class_parameters = []
+
                         for class_param in list(signature(_class).parameters.items()):
                             class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0])
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
@@ -187,7 +189,8 @@ def get_class_with_parameters(_class, _class_name):
                         }
         except AttributeError:
             # TODO: Support more classes
-            print("Attribute error")
+            print("Attribute error " + _class_name)
             return_class = {}
+
     return return_class
 
