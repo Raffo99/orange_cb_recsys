@@ -133,21 +133,25 @@
 }
 
 ::-webkit-scrollbar {
+    border-bottom-right-radius: 10px;
     border-left: 2px solid black;
     width: 10px;
 }
 
 ::-webkit-scrollbar-track {
+    border-bottom-right-radius: 10px;
     border-left: 2px solid black;
     background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
+    border-bottom-right-radius: 10px;
     border-left: 2px solid black;
     background: #888;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+    border-bottom-right-radius: 10px;
     border-left: 2px solid black;
     background: #555;
 }

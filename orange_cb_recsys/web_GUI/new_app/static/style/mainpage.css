@@ -1,7 +1,16 @@
-.module {
+#wrapper-project {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: stretch;
+    height: 100%;
+}
+
+#div-project {
     border: 2px solid black;
     border-radius: 10px;
-    min-height: 250px;
+    height: 250px;
+    background-color: #f1f1f1;
 }
 
 #ca-module {
@@ -25,41 +34,67 @@
     text-align: center;
     font-weight: bold;
     font-size: large;
+
 }
 
-.module-icon {
+.project-icon {
     padding-top: 5%;
     display: block;
     margin-left: auto;
     margin-right: auto;
 }
 
-.module hr {
+#div-project hr {
     border-color: black;
-}
-
-.module-button-config {
-    text-align: center;
-    margin-top: 25px;
-}
-
-.module-button-config:last-child {
-    margin-bottom: 15px;
-}
-
-.module-button-config button {
-    color: black;
-    text-decoration: none;
-    border: 2px solid black;
-    border-radius: 10px;
-    padding: 10px;
     width: 100%;
-    background: white;
 }
 
-.module-button-config button:hover {
+.project-button-config {
+    text-align: center;
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+form {
+    flex: 1;
+}
+
+.project-button-config button {
+    background-color: #f1f1f1;
+    border: 0px;
+    font-size: 15px;
+    font-family: Ubuntu, sans-serif;
+    cursor: pointer;
+}
+
+.project-button-config input {
+    left: 0px;
+    opacity: 0;
+    z-index: 2;
+    position: absolute;
+    width: 100%;
+}
+
+.project-button-config input:hover span {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.project-button-config input:hover {
     cursor: pointer;
     font-weight: bold;
+}
+
+.project-button-config span {
+    position: absolute;
+    bottom: 0px;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+    z-index: 1;
+    width: 100%;
 }
 
 #header {
