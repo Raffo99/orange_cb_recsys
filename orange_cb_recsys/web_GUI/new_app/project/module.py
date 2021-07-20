@@ -50,7 +50,7 @@ class ContentAnalyzerModule(Module):
     __content_type = ""
     __source_path = ""
     __source_type = ""
-    __id_field_name = []
+    __id_fields_name = []
     __order_fields = {}
 
     def __init__(self):
@@ -61,23 +61,25 @@ class ContentAnalyzerModule(Module):
         self._pages_status = {
             "Upload": PossiblePageStatus.INCOMPLETE,
             "Fields": PossiblePageStatus.DISABLED,
-            "Algorithms": PossiblePageStatus.DISABLED,
-            "Execute": PossiblePageStatus.DISABLED
+            "Algorithms": PossiblePageStatus.DISABLED
         }
 
     def is_complete(self):
         return self._pages_status["Algorithms"] == PossiblePageStatus.COMPLETE
 
     def clear_id_fields(self):
-        self.__id_field_name.clear()
+        self.__id_fields_name.clear()
 
     def add_id_field(self, new_field):
-        self.__id_field_name.append(new_field)
+        self.__id_fields_name.append(new_field)
 
     def set_fields(self, new_fields):
         self.__fields.clear()
         for key, value in new_fields.items():
             self.set_field(key, value)
+
+    def has_already_dataset(self):
+        return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
 
     @staticmethod
     def convert_key(key):
@@ -135,6 +137,12 @@ class ContentAnalyzerModule(Module):
         self.__source_path = new_source_path
         self.__source_type = new_source_path[new_source_path.rindex(".") + 1:]
 
+    def set_id_fields(self, new_id_fields):
+        self.__id_fields_name = new_id_fields
+
+    def get_id_fields(self):
+        return self.__id_fields_name
+
     def __convert_class(self, class_to_convert):
         class_obj = {}
         if "type" not in class_to_convert:
@@ -186,24 +194,31 @@ class ContentAnalyzerModule(Module):
         return converted_representations
 
     def __convert_fields(self):
-        converted_fields = []
+        converted_fields = {}
         for name_field, representations in self.__fields.items():
-            converted_fields.append({
-                name_field: self.__convert_representations(representations)
-            })
+            converted_fields[name_field] = self.__convert_representations(representations)
         return converted_fields
 
-    def produce_config_file(self):
-        config_file_obj = {
-            "content_type": self.__content_type,
-            "output_directory": self.get_output_directory(),
-            "raw_source_path": self.__source_path,
-            "source_type": self.__source_type,
-            "id_field_name": self.__id_field_name,
-            "field_dict": self.__convert_fields()
+    def __get_source_class(self):
+        return {
+            "class": self.__source_type + "file",
+            "file_path": self.__source_path,
+            "has_header": True
         }
 
-        return [config_file_obj]
+    def produce_config_file(self):
+        # TODO: From class take if it is Item or User Analyzer
+        config_file_obj = {
+            "class": "ItemAnalyzerConfig",
+            "source": self.__get_source_class(),
+            "id": self.__id_fields_name,
+            "output_directory": self.get_output_directory(),
+            "field_dict": self.__convert_fields(),
+            "exogenous_representation_list": None,
+            "export_json": False
+        }
+
+        return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
 
 
 class RecommenderSystemModule(Module):
@@ -215,7 +230,6 @@ class RecommenderSystemModule(Module):
         self._pages_status = {
             "Upload": PossiblePageStatus.INCOMPLETE,
             "Representations": PossiblePageStatus.DISABLED,
-            "Execute": PossiblePageStatus.DISABLED
         }
 
     def is_complete(self):
