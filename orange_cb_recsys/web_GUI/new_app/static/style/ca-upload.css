@@ -1,23 +1,25 @@
-.col-4 > table {
+#ca-form-upload {
     border: 2px black solid;
     border-radius: 10px;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    justify-content: center;
 }
 
-tr td:last-child {
+input[type="file"] {
     width: 50%;
-}
-
-input[type=text] {
-    width: 80%;
 }
 
 #submit-cell {
     text-align: right;
     padding-bottom: 10px;
+}
+
+input[type="text"] {
+    width: 80%;
 }
 
 .errors {
@@ -41,9 +43,11 @@ input[type=text] {
     margin-bottom: 7%;
 }
 
-input[type='image'] {
-    height: 50px;
-    order: 2;
-    margin-left: auto;
-    margin-right: 20px;
+.wrapper-errors {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.div-error {
+    padding-bottom: 10px;
 }

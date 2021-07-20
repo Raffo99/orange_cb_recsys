@@ -41,8 +41,20 @@
                         {% for field in fields %}
                             <tr>
                                 <td>{{ field }}</td>
-                                <td><input type="checkbox" name="{{ field }}__{{ loop.index }}" id="{{ field }}"></td>
-                                <td><input type="checkbox" name="{{ field }}__fieldid" id="{{ field }}__fieldid"></td>
+                                <td>
+                                    {% if field in project.content_analyzer.get_fields() %}
+                                        <input type="checkbox" name="{{ field }}__{{ loop.index }}" id="{{ field }}" checked>
+                                    {% else %}
+                                        <input type="checkbox" name="{{ field }}__{{ loop.index }}" id="{{ field }}">
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if field in project.content_analyzer.get_id_fields() %}
+                                        <input type="checkbox" name="{{ field }}__fieldid" id="{{ field }}__fieldid" checked>
+                                    {% else %}
+                                        <input type="checkbox" name="{{ field }}__fieldid" id="{{ field }}__fieldid">
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </table>
