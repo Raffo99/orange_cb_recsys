@@ -46,7 +46,8 @@ function getClassWithParameters(blockParameter) {
                 'value': blockParameterContainer.children("[class='block-sub-classes-selection']").children("select").val(),
                 'sub_classes': subClasses
             }
-        } else if (blockParameterContainer.children("[class='block-parameter']").length > 0) {
+        } else if (blockParameterContainer.children("[class='block-parameter']").length > 0
+                        || blockParameterContainer.length == 0) {
             // Parameter is Complex with parameters
             let parameters = [];
             blockParameterContainer.children("[class*='block-parameter']").each(function () {
@@ -89,6 +90,8 @@ function saveField() {
         paramsTable.children("[class='block-parameter']").each(function () {
             parameters.push(getClassWithParameters($(this)));
         });
+
+        console.log(parameters)
 
         nlpTable.children(".nlp-technique").each(function () {
             let nlpParams = [];
