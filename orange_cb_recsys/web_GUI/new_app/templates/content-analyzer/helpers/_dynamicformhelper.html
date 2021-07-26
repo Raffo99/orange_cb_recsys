@@ -49,6 +49,43 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="div-representation-header">
+            <div class="header-label">Memory Interfaces</div>
+        </div>
+        <div class="div-representation-content">
+            <div class="mi-table">
+                <div class="block-algorithms-selection">
+                    {% if representation['memory_interfaces']['use'] %}
+                        <input type="checkbox" checked>
+                    {% else %}
+                        <input type="checkbox">
+                    {% endif %}
+                    <label>Algorithm</label>
+                    <select class="select-algorithm" name="algtype">
+                        {% for algorithm in representation['memory_interfaces']['algorithms'] %}
+                            {% if algorithm["name"] == representation['memory_interfaces']['value'] %}
+                            <option value="{{ algorithm['name'] }}" selected>{{ algorithm['name'] }}</option>
+                            {% else %}
+                            <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="block-algorithms">
+                    {% for algorithm in representation['memory_interfaces']['algorithms'] %}
+                        {% if algorithm["name"] == representation['memory_interfaces']['value'] %}
+                        <div class="block-algorithm active-block" name="algtype-{{ algorithm['name'] }}">
+                        {% else %}
+                        <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                        {% endif %}
+                        {% for param in algorithm['params'] %}
+                            {{ render_param(param, false) }}
+                        {% endfor %}
+                         </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endmacro %}

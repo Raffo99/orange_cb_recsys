@@ -1,79 +1,6 @@
-import { changeActiveBlock } from "./utils-functions.js";
-import { fixName } from "./utils-functions.js";
+import { changeActiveBlock, fixName, getClassWithParameters, showToast } from "./utils-functions.js";
 
-function getClassWithParameters(blockParameter) {
-    const types = {
-        "text": "str",
-        "number": "int",
-        "checkbox": "bool"
-    }
-
-    if (blockParameter.children("[class='block-union-selection']").length > 0) {
-        // Parameter is Union
-        let parameters = [];
-        blockParameter.children("[class='block-union-parameter']").children("[class*='block-parameter']").each(function () {
-            parameters.push(getClassWithParameters($(this)));
-        });
-
-        blockParameter.children("[class='block-union-selection']").children("select").children("option").each(function (index) {
-            parameters[index]["name"] = $(this).val();
-        });
-
-        return {
-            'name': blockParameter.children("[class='block-union-selection']").children("label").text(),
-            'type': 'Union',
-            'value': blockParameter.children("[class='block-union-selection']").children("select").val(),
-            'params': parameters
-        }
-    } else {
-        let blockParameterContainer = (blockParameter.children("[class*='block-parameter-container']"));
-
-        if (blockParameterContainer.children("[class*='block-sub-classes']").length > 0) {
-            // Parameter is Complex with sub classes
-            let subClasses = [];
-            let blockSubClasses = blockParameterContainer.children("[class='block-sub-classes']");
-            blockSubClasses.children("[class*='block-parameter']").each(function () {
-                subClasses.push(getClassWithParameters($(this)));
-            });
-
-            blockParameterContainer.children("[class='block-sub-classes-selection']").children("select").children("option").each(function (index) {
-               subClasses[index]["name"] = $(this).val();
-            });
-
-            return {
-                'name': blockParameterContainer.children("[class='block-sub-classes-selection']").children("label").text(),
-                'type': 'Complex',
-                'value': blockParameterContainer.children("[class='block-sub-classes-selection']").children("select").val(),
-                'sub_classes': subClasses
-            }
-        } else if (blockParameterContainer.children("[class='block-parameter']").length > 0
-                        || blockParameterContainer.length == 0) {
-            // Parameter is Complex with parameters
-            let parameters = [];
-            blockParameterContainer.children("[class*='block-parameter']").each(function () {
-                parameters.push(getClassWithParameters($(this)));
-            });
-
-            return {
-                'name': blockParameterContainer.children("label").text(),
-                'type': 'Complex',
-                'params': parameters
-            }
-        } else {
-            let value = blockParameterContainer.children("input").attr("type") == "checkbox" ?
-                blockParameterContainer.children("input").is(":checked") :
-                blockParameterContainer.children("input").val();
-            // Parameter is Simple
-            return {
-                'name': blockParameterContainer.children("label").text(),
-                'type': types[blockParameterContainer.children("input").attr('type')],
-                'value': value
-            }
-        }
-    }
-}
-
-// Funzione per salvare le rappresentazioni del campo selezionato
+// Method used to save the current active field
 function saveField() {
     let fieldName = $(".active-field").text();
     let representations = [];
@@ -82,6 +9,7 @@ function saveField() {
         let divContent = $(this).find(".div-representation-content");
         let paramsTable = divContent.children(".parameters-table");
         let nlpTable = divContent.children(".nlp-table");
+        let miTable = divContent.children(".mi-table");
 
         let idRepresentation = $(this).find(".input-name-id").val();
 
@@ -90,8 +18,6 @@ function saveField() {
         paramsTable.children("[class='block-parameter']").each(function () {
             parameters.push(getClassWithParameters($(this)));
         });
-
-        console.log(parameters)
 
         nlpTable.children(".nlp-technique").each(function () {
             let nlpParams = [];
@@ -106,13 +32,32 @@ function saveField() {
             })
         });
 
+        let memory_interfaces_algorithms = []
+        miTable.children(".block-algorithms").children(".block-algorithm").each(function () {
+            let params_interface = []
+
+            $(this).children(".block-parameter").each(function () {
+                params_interface.push(getClassWithParameters($(this)));
+            });
+
+            memory_interfaces_algorithms.push({
+                "name": $(this).attr('name').replace("algtype-", ""),
+                "params": params_interface
+            })
+        });
+
         representations.push({
             "id": idRepresentation,
             "algorithm": {
                 'name': fixName($(this).find(".representation-algorithm-name").text(), true),
                 'params': parameters
             },
-            'preprocess': nlpTechniques
+            'preprocess': nlpTechniques,
+            'memory_interfaces': {
+                'algorithms': memory_interfaces_algorithms,
+                'value': miTable.children(".block-algorithms-selection").children("select").val(),
+                'use': miTable.children(".block-algorithms-selection").children("input[type=checkbox]").prop('checked')
+            }
         });
     });
 
@@ -121,9 +66,9 @@ function saveField() {
     fd.append('representations', JSON.stringify(representations));
 
     navigator.sendBeacon("/ca-update-representations", fd);
-    console.log("Inviato");
 }
 
+// Method used to load a new field in the div
 function loadField(nameField, listToAppend) {
     $.ajax({
         type: 'POST',
@@ -144,12 +89,24 @@ function loadField(nameField, listToAppend) {
     });
 }
 
-// Salvaggio del campo attuale quando si esce dalla pagina
-$(window).on("unload", function () {
+// On unload of the window, save the current active field
+$(window).on("beforeunload", function () {
     saveField();
 });
 
+$("#save-form").click(function () {
+    saveField();
+    showToast("Fields saved successfully!", 2000);
+});
+
+// Main function for document (JQuery)
 $(document).ready(function () {
+    $("#continue-button").click(function () {
+       saveField();
+
+       window.location.replace("/recsys/upload");
+    });
+
     $("#new-representation-options").width($("#new-representation").width() + 20);
 
     $(window).resize(function() {
@@ -163,16 +120,15 @@ $(document).ready(function () {
     $("[id^='nav-option']").first().addClass('active-field');
     $(".field-container").first().addClass('active-container');
 
-    // Caricamento del primo campo selezionato
+    // Load the first field
     let listToAppend = $(".representation-list");
     let nameField = $(".active-field").attr("id").replace('nav-option-', '');
 
     loadField(nameField, listToAppend);
 
-    // Funzione per cambiare da un campo all'altro, salvare i dati e caricare l'altro campo
+    // Method use to change the current active field
     $(".wrapper-option-number").click(function () {
         saveField();
-        console.log("Finito")
 
         let listToAppend = $(".representation-list");
         let nextFieldName = $(this).find("[id^='nav-option']").text();
@@ -184,7 +140,7 @@ $(document).ready(function () {
         $(this).find("[id^='nav-option']").addClass("active-field");
     });
 
-    // Funzione per aggiungere una nuova rappresentazione
+    // Method used to add a new representation to the selected field
     $("#new-representation-options").on("click", ".new-representation-option", function () {
         $("#new-representation-options").stop().slideToggle();
 
@@ -194,7 +150,6 @@ $(document).ready(function () {
         let numberToChange = $("#nav-option-" + nameField).parent().find(".number-representations");
         numberToChange.text((numberToChange.text() * 1) + 1);
         numberToChange.addClass("active-number");
-        console.log($(this).find("label").text());
 
         $.ajax({
             type: 'POST',
@@ -215,7 +170,7 @@ $(document).ready(function () {
         });
     });
 
-    // Funzione per chiudere e aprire le rappresentazioni
+    // Method for toggle the representations
     $(".representation-list").on("click", ".close-representation", function () {
         $(this).parent().parent().find(".wrapper-representation-content").stop().slideToggle();
         if ($(this).text() == '–') $(this).text("+");
@@ -223,23 +178,30 @@ $(document).ready(function () {
     });
 
     let selectedRepresentation;
-    // Funzione per cancellare una rappresentazione
+    // Method used to delete a representation
     $(".representation-list").on("click", ".delete-representation", function () {
+        selectedRepresentation = $(this);
+
+        let dialogOverlay = $("#overlay").children("#dialog");
+
+        dialogOverlay.children("#dialog-question").text("Are you sure you want to delete this representation?");
+
+        dialogOverlay.children("#dialog-buttons").children("#dialog-yes").click(yesDelete);
+
+        dialogOverlay.children("#dialog-buttons").children("#dialog-no").click(function () {
+            $("#overlay").fadeOut();
+        });
+
         $("#overlay").fadeIn();
         $("#overlay").css("display", "flex");
-        selectedRepresentation = $(this);
     });
 
-    $("#dialog-no").click(function () {
-        $("#overlay").fadeOut();
-    });
-
-    $("#dialog-yes").click(function () {
+    // Method used for the yes button on the overlay (for deleting representation)
+    function yesDelete() {
         $("#overlay").fadeOut();
         saveField();
 
         let indexRepresentation = selectedRepresentation.parent().parent().index();
-        console.log(indexRepresentation)
         let fieldName = $(".active-field").attr("id").replace('nav-option-', '');
 
         $.ajax({
@@ -261,9 +223,9 @@ $(document).ready(function () {
             let numberToChange = $(".active-field").parent().find(".number-representations");
             numberToChange.text((numberToChange.text() * 1) - 1);
         });
-    });
+    }
 
-    // Funzione per i parametri con valori complessi
+    // Methods for the select list
     $(".representation-list").on("click", ".select-union", function() {
         $(this).change(function () {
             changeActiveBlock($(this));
@@ -275,4 +237,10 @@ $(document).ready(function () {
             changeActiveBlock($(this));
         });
     })
+
+    $(".representation-list").on("click", ".select-algorithm", function () {
+        $(this).change(function () {
+            changeActiveBlock($(this));
+        });
+    });
 });
