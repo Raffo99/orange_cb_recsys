@@ -54,6 +54,18 @@ function saveAlgorithms() {
 }
 
 $(document).ready(function () {
+    $(".add-kwargs-button").click(function () {
+       $(this).parent().parent().children(".list-kwargs").append(
+        "<div class='item-kwargs'>Name<input type='text' class='nameArg'>Value<input type='text' class='valueArg'><img class='delete-arg' src='../../static/icons/delete-icon.svg'></div>"
+       );
+    });
+
+    $(".list-kwargs").on("click", ".delete-arg", function() {
+        $(this).parent().slideToggle(function() {
+            $(this).remove();
+        });
+    });
+
     $("#continue-button").click(function () {
        saveAlgorithms();
        // Redirect to next section

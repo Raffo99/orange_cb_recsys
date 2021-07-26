@@ -1,6 +1,6 @@
 .div-content-algorithms {
     border: 2px solid black;
-    height: 69vh;
+    height: 60vh;
     overflow-y: auto;
     background-color: #f1f1f1!important;
     box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
@@ -16,7 +16,7 @@
 
 .div-content-representations {
     border: 2px solid black;
-    height: 69vh;
+    height: 60vh;
     overflow-y: auto;
     background-color: #f1f1f1!important;
     box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
@@ -214,4 +214,48 @@ input[type=text], input[type=number] {
     border: 1px solid black;
     border-radius: 5px;
     padding: 10px 0px 0px 10px;
+}
+
+.wrapper-kwargs {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-kwargs {
+    padding: 5px;
+    margin: -1px;
+    display: flex;
+    align-items: center;
+    border: 1px solid black;
+}
+
+.item-kwargs:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.item-kwargs:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.item-kwargs > input {
+    margin-right: 20px;
+}
+
+.item-kwargs > img {
+    height: 30px;
+}
+
+.header-kwargs {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.add-kwargs {
+    margin-top: 10px;
+}
+
+.delete-arg {
+    cursor: pointer;
 }

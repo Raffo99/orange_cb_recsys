@@ -4,8 +4,10 @@ from orange_cb_recsys.content_analyzer.field_content_production_techniques.field
     import FieldContentProductionTechnique
 from orange_cb_recsys.content_analyzer.information_processor.information_processor import InformationProcessor
 from orange_cb_recsys.content_analyzer.memory_interfaces.memory_interfaces import InformationInterface
+from orange_cb_recsys.content_analyzer.config import ExogenousConfig
 from orange_cb_recsys.recsys.recsys import RecSys
 from inspect import signature
+from abc import ABC
 
 import orange_cb_recsys.utils.runnable_instances as r_i
 import typing
@@ -26,6 +28,7 @@ def get_recsys_algorithms():
     add_algorithms(rec_sys, r_i.get_all_implemented_classes(RecSys))
 
     rec_sys = remove_names(rec_sys, ['users_contents_dir', 'item_contents_dir', 'items_directory', 'users_directory'])
+    print(rec_sys)
 
     return rec_sys
 
@@ -50,20 +53,26 @@ def get_ca_algorithms():
     content_production_algorithms = []
     preprocessing_algorithms = []
     memory_interfaces = []
+    exogenous_algorithms = []
 
     # Get all classes implemented for content_production
     content_production_classes = r_i.get_all_implemented_classes(FieldContentProductionTechnique)
     # Get all classes implemented for preprocessing
     preprocessing_classes = r_i.get_all_implemented_classes(InformationProcessor)
-    # Get all classes implemented fro memory interface
+    # Get all classes implemented for memory interface
     memory_interfaces_classes = r_i.get_all_implemented_classes(InformationInterface)
+    # Get all classes implemented for exogenous
+    exogenous_classes = r_i.get_all_implemented_classes(ExogenousConfig)
 
     add_algorithms(content_production_algorithms, content_production_classes)
     content_production_algorithms.sort(key=lambda x: x['name'])
     add_algorithms(preprocessing_algorithms, preprocessing_classes)
     add_algorithms(memory_interfaces, memory_interfaces_classes)
+    add_algorithms(exogenous_algorithms, exogenous_classes)
 
-    return content_production_algorithms, preprocessing_algorithms, memory_interfaces
+    remove_names(exogenous_algorithms, ["field_name_list"])
+
+    return content_production_algorithms, preprocessing_algorithms, memory_interfaces, exogenous_algorithms
 
 
 def add_algorithms(algorithms_list, classes_list):
@@ -104,7 +113,7 @@ def add_algorithms(algorithms_list, classes_list):
             algorithms_list.append({'name': algorithm_class.__name__})
 
 
-def get_class_with_parameters(_class, _class_name, layer):
+def get_class_with_parameters(_class, _class_name, layer, default_value=None):
     """
     Recursive method that support the add_algorithms method, it takes in input a class and return an object of
     the class like  this typo:
@@ -133,8 +142,11 @@ def get_class_with_parameters(_class, _class_name, layer):
 
     # If the class is a list, the method has to specify it
     if hasattr(_class, "__origin__") and _class.__origin__ is list:
-        # TODO: Let the list be a list, not a single item
-        _class = _class.__args__[0]
+        return {
+            "name": _class_name,
+            "type": "List",
+            "listType": _class.__args__[0].__name__
+        }
 
     # If the class is a Union of class, the method has to iterate the method over every class of the Union
     if hasattr(_class, "__origin__") and _class.__origin__ is typing.Union:
@@ -154,9 +166,7 @@ def get_class_with_parameters(_class, _class_name, layer):
             'params': possible_classes
         }
     else:
-        # TODO: Remove this, i use this for debug the recsys module (problems with the recursion of this method)
-        if type(_class).__name__ == "str":
-            return
+
 
         try:
             # If the class is a simple class (ex. string, int, float, etc)
@@ -166,13 +176,15 @@ def get_class_with_parameters(_class, _class_name, layer):
                     'name': _class_name,
                     'type': _class.__name__
                 }
+                if default_value is not inspect._empty and default_value is not None:
+                    return_class["value"] = default_value
             else:
                 # Either way, if the class is a complex class, the method checks if the class is an abstract class
-                if inspect.isabstract(_class):
+                if inspect.isabstract(_class) or ABC in _class.__bases__:
                     # If the class is an abstract class the method have to iterate over all the derived classes
                     sub_classes = []
                     for sub_class in r_i.get_all_implemented_classes(_class):
-                        if sub_class.__name__ == _class_name:
+                        if sub_class.__name__.lower() == _class_name.lower():
                             continue
                         sub_class_name = sub_class.__name__
                         class_to_append = get_class_with_parameters(sub_class, sub_class_name, layer + 1)
@@ -192,21 +204,20 @@ def get_class_with_parameters(_class, _class_name, layer):
                         # TODO: Support dictionary
                         return_class = {'name': 'dict'}
                     else:
-                        if _class_name == "kwargs" or _class_name == "lang":
+                        if _class_name == "lang" or _class is type(None) or _class is type:
                             return {}
+
+                        if _class_name == "kwargs":
+                            return {
+                                "name": _class_name,
+                                "type": "kwargs"
+                            }
 
                         class_parameters = []
 
-                        if _class is type(None):
-                            return {}
-                        if _class is type:
-                            return {}
-
                         for class_param in list(signature(_class).parameters.items()):
-                            if class_param[1].annotation is inspect._empty:
-                                class_to_append = get_class_with_parameters(type(class_param[1].default), class_param[0], layer + 1)
-                            else:
-                                class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0], layer + 1)
+                            class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0],
+                                                                        layer + 1, class_param[1].default)
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                                 class_parameters.append(class_to_append)
 

@@ -243,4 +243,16 @@ $(document).ready(function () {
             changeActiveBlock($(this));
         });
     });
+
+    $(".representation-list").on("click", ".add-kwargs-button", function () {
+        $(this).parent().parent().children(".list-kwargs").append(
+            "<div class='item-kwargs'>Name<input type='text' class='nameArg'>Value<input type='text' class='valueArg'><img class='delete-arg' src='../../static/icons/delete-icon.svg'></div>"
+        );
+    });
+
+    $(".representation-list").on("click", ".delete-arg", function() {
+        $(this).parent().slideToggle(function() {
+            $(this).remove();
+        });
+    });
 });

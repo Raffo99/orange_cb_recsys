@@ -21,7 +21,7 @@
     padding: 10px;
 }
 
-#div-content-field button {
+.close-representation {
     background-color: #f1f1f1!important;
 }
 
@@ -394,4 +394,49 @@
 
 .block-algorithms-selection > label {
     margin: 0px 5px 0px 5px;
+}
+
+.wrapper-kwargs {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-kwargs {
+    padding: 5px;
+    margin: -1px;
+    display: flex;
+    align-items: center;
+    border: 1px solid black;
+}
+
+.item-kwargs:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.item-kwargs:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.item-kwargs > input {
+    margin-right: 20px;
+    margin-left: 5px;
+}
+
+.item-kwargs > img {
+    height: 30px;
+}
+
+.header-kwargs {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.add-kwargs {
+    margin-top: 10px;
+}
+
+.delete-arg {
+    cursor: pointer;
 }

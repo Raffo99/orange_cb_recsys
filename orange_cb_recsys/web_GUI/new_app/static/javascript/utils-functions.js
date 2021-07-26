@@ -57,6 +57,18 @@ export function getClassWithParameters(blockParameter) {
                 'type': 'Complex',
                 'params': parameters
             }
+        } else if (blockParameterContainer.children("[class='wrapper-kwargs']").length > 0) {
+            let divListArgs = blockParameterContainer.children(".wrapper-kwargs").children(".list-kwargs");
+            let argsDict = {}
+            divListArgs.children(".item-kwargs").each(function () {
+                argsDict[$(this).children(".nameArg").val()] = $(this).children(".valueArg").val();
+            });
+
+            return {
+                "name": "kwargs",
+                "type": "kwargs",
+                "params": argsDict
+            }
         } else {
             let value = blockParameterContainer.children("input").attr("type") == "checkbox" ?
                 blockParameterContainer.children("input").is(":checked") :

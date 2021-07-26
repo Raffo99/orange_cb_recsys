@@ -94,7 +94,27 @@
             {% endfor %}
         </div>
     {% endif %}
-
+    {% if param["type"] == "kwargs" %}
+        <div class="block-parameter-container">
+            <div class="wrapper-kwargs">
+                <div class="header-kwargs">Custom Parameters</div>
+                <div class="list-kwargs">
+                    {% if "params" in param %}
+                        {% for param_name, param_value in param["params"].items() %}
+                            <div class='item-kwargs'>
+                                Name<input type='text' class='nameArg' value="{{ param_name }}">
+                                Value<input type='text' class='valueArg' value="{{ param_value }}">
+                                <img class='delete-arg' src='../../static/icons/delete-icon.svg'>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="add-kwargs">
+                    <button class="add-kwargs-button">Add Parameter</button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     {% if not union_parameter %}
     </div>
     {% endif %}
