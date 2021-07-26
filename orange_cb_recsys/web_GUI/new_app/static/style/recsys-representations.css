@@ -3,7 +3,7 @@
     height: 69vh;
     overflow-y: auto;
     background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
 }
 
 .col-8 {
@@ -19,7 +19,8 @@
     height: 69vh;
     overflow-y: auto;
     background-color: #f1f1f1!important;
-    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%)
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    overflow-x: hidden;
 }
 
 .field-wrapper {
@@ -43,31 +44,32 @@
 
 .representations-list {
     list-style-type: none;
-    margin: 0 0 10px;
 }
 
 .representations-list hr {
-    margin: 5px auto;
     width: 30%;
     border-color: black;
 }
 
-.representation-label {
-    text-align: center;
+.representation-item {
+    display: flex;
+    justify-content: center;
+    padding: 3px;
 }
 
 .representation-item input {
-    vertical-align: bottom;
-    position: relative;
+    margin-right: 5px;
 }
 
-.representation-label {
-    display: block;
+.field-name > input[type=checkbox] {
+    margin-right: 5px;
 }
 
 .field-name {
     text-align: center;
     font-weight: bold;
+    display: flex;
+    justify-content: center;
 }
 
 .block-parameter {
@@ -104,8 +106,48 @@
     margin: 5px;
 }
 
-.block-sub-classes > .block-parameter > .block-parameter-container {
+.block-union-parameter > .block-parameter > .block-parameter-container {
+    display: block;
+}
 
+.block-sub-classes > .block-parameter > .block-parameter-container {
+    display: block;
+}
+
+.block-algorithm > .block-parameter > .block-parameter-container {
+    display: block;
+}
+
+.block-parameter-container {
+    display: flex;
+}
+
+.block-parameter:empty {
+    border: 2px solid red;
+}
+
+.block-algorithm > .block-parameter > .block-parameter-container > .block-sub-classes-selection > label {
+    font-weight: normal;
+}
+
+.block-algorithm > .block-parameter > .block-parameter-container > .block-sub-classes-selection {
+    margin-left: 0px;
+}
+
+.empty-params > .block-sub-classes-selection > label {
+    font-weight: normal;
+}
+
+.empty-params > .block-sub-classes-selection {
+    margin-left: 0px;
+}
+
+.empty {
+    display: none;
+}
+
+.block-parameter-container.complex {
+    display: block;
 }
 
 input[type=text], input[type=number] {
@@ -122,4 +164,54 @@ input[type=text], input[type=number] {
 
 .block-sub-classes > .block-parameter {
     padding: 5px 0px 0px 5px;
+}
+
+::-webkit-scrollbar {
+    border-left: 2px solid black;
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    border-left: 2px solid black;
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    border-left: 2px solid black;
+    background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    border-left: 2px solid black;
+    background: #555;
+}
+
+.block-sub-classes > .block-parameter > .block-parameter-container > label::before {
+    content: "▸";
+}
+
+.select-subclass {
+    margin-left: 10px;
+}
+
+.block-sub-classes-selection {
+    margin: 10px;
+}
+
+.block-sub-classes-selection > label {
+    font-weight: bold;
+}
+
+.block-union-parameter > .block-parameter > .block-parameter-container.complex {
+    border: 1px solid black;
+    border-radius: 5px;
+}
+.block-sub-classes > .block-parameter > .block-parameter-container > label {
+    font-weight: bold;
+}
+
+.block-sub-classes > .block-parameter > .block-parameter-container {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px 0px 0px 10px;
 }
