@@ -4,13 +4,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
     <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
-    <script type=text/javascript src="{{ url_for('static', filename='javascript/nav-bar-left-script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='javascript/nav-bar-left-script.js') }}"></script>
     {% block header_import %} {% endblock %}
 </head>
 <body>
-    <div id="nav-bar-left">
-        {% block nav_bar_left %} {% endblock %}
+    <div id="overlay">
+        <div id="dialog">
+            <div id="dialog-header">CONFIRMATION</div>
+            <div id="dialog-question"></div>
+            <div id="dialog-buttons">
+                <button id="dialog-yes">YES</button>
+                <button id="dialog-no">NO</button>
+            </div>
+        </div>
     </div>
+    <div id="toast">
+        <label></label>
+    </div>
+    {% block nav_bar_left %} {% endblock %}
     <div id="box">
         <div id="header">
                 {% block header %} {% endblock %}
