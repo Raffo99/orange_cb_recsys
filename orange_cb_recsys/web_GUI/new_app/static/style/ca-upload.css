@@ -51,3 +51,12 @@ input[type="text"] {
 .div-error {
     padding-bottom: 10px;
 }
+
+.wrapper-radio {
+    display: inline-flex;
+    align-items: center;
+}
+
+.wrapper-radio > label {
+    margin: 0px 15px 0px 5px;
+}

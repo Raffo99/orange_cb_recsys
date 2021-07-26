@@ -9,7 +9,6 @@
 #div-project {
     border: 2px solid black;
     border-radius: 10px;
-    height: 250px;
     background-color: #f1f1f1;
 }
 
@@ -23,18 +22,6 @@
 
 #ev-module {
     background-color: #4285F4;
-}
-
-#module-forms {
-    padding-top: 3%;
-}
-
-.module-name {
-    padding-top: 5%;
-    text-align: center;
-    font-weight: bold;
-    font-size: large;
-
 }
 
 .project-icon {
@@ -57,16 +44,23 @@
     justify-content: center;
 }
 
-form {
-    flex: 1;
-}
-
 .project-button-config button {
     background-color: #f1f1f1;
     border: 0px;
     font-size: 15px;
+    transition: 0.3s;
     font-family: Ubuntu, sans-serif;
     cursor: pointer;
+}
+
+.project-button-config button:hover {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.project-button-config span {
+    font-size: 15px;
+    transition: 0.3s;
 }
 
 .project-button-config input {
@@ -100,4 +94,74 @@ form {
 #header {
     margin-top: 5%;
     margin-bottom: 5%;
+}
+
+#wrapper-forms {
+    border-bottom: 2px solid black;
+    height: 120px;
+    text-align: center;
+    padding-top: 10px;
+}
+
+#wrapper-forms form {
+    padding-top: 15px;
+}
+
+#wrapper-current-project {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#wrapper-current-project label, #wrapper-forms label {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+#current-project-content {
+    padding: 10px;
+}
+
+#table-content tr td {
+    padding: 5px;
+}
+
+#table-content {
+    margin-left: 50px;
+}
+
+#nameProject {
+    width: 70%;
+}
+
+#savePath {
+    width: 90%;
+}
+
+#table-content tr {
+    padding-bottom: 10px;
+}
+
+#wrapper-submit {
+    margin-top: 10px;
+}
+
+#wrapper-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#wrapper-submit button {
+    padding: 10px;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.div-error {
+    text-align: center;
 }
