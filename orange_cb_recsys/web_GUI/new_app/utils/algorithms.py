@@ -3,6 +3,7 @@ import inspect
 from orange_cb_recsys.content_analyzer.field_content_production_techniques.field_content_production_technique \
     import FieldContentProductionTechnique
 from orange_cb_recsys.content_analyzer.information_processor.information_processor import InformationProcessor
+from orange_cb_recsys.content_analyzer.memory_interfaces.memory_interfaces import InformationInterface
 from orange_cb_recsys.recsys.recsys import RecSys
 from inspect import signature
 
@@ -10,9 +11,22 @@ import orange_cb_recsys.utils.runnable_instances as r_i
 import typing
 
 
+def remove_names(obj, rubbish):
+    if isinstance(obj, list):
+        obj = [remove_names(item, rubbish) for item in obj
+               if (isinstance(item, dict) and item["name"] not in rubbish) or (not isinstance(item, dict))]
+    elif isinstance(obj, dict):
+        obj = {key: remove_names(value, rubbish) for key, value in obj.items() if key not in rubbish}
+
+    return obj
+
+
 def get_recsys_algorithms():
     rec_sys = []
     add_algorithms(rec_sys, r_i.get_all_implemented_classes(RecSys))
+
+    rec_sys = remove_names(rec_sys, ['users_contents_dir', 'item_contents_dir', 'items_directory', 'users_directory'])
+
     return rec_sys
 
 
@@ -42,10 +56,12 @@ def get_ca_algorithms():
     # Get all classes implemented for preprocessing
     preprocessing_classes = r_i.get_all_implemented_classes(InformationProcessor)
     # Get all classes implemented fro memory interface
+    memory_interfaces_classes = r_i.get_all_implemented_classes(InformationInterface)
 
     add_algorithms(content_production_algorithms, content_production_classes)
     content_production_algorithms.sort(key=lambda x: x['name'])
     add_algorithms(preprocessing_algorithms, preprocessing_classes)
+    add_algorithms(memory_interfaces, memory_interfaces_classes)
 
     return content_production_algorithms, preprocessing_algorithms, memory_interfaces
 
@@ -73,7 +89,7 @@ def add_algorithms(algorithms_list, classes_list):
 
             # Iterate over every parameter in the signature of the class, and use the recursive method on it
             for parm in signature_parameters:
-                class_to_append = get_class_with_parameters(parm[1].annotation, parm[0])
+                class_to_append = get_class_with_parameters(parm[1].annotation, parm[0], 0)
                 if 'name' in class_to_append:
                     parm_list.append(class_to_append)
 
@@ -83,12 +99,12 @@ def add_algorithms(algorithms_list, classes_list):
                 'params': parm_list
             })
 
-        except ValueError:
+        except ValueError as ve:
             # If there is a problem in the signature function, the class of the algorithm doesn't have parameters
             algorithms_list.append({'name': algorithm_class.__name__})
 
 
-def get_class_with_parameters(_class, _class_name):
+def get_class_with_parameters(_class, _class_name, layer):
     """
     Recursive method that support the add_algorithms method, it takes in input a class and return an object of
     the class like  this typo:
@@ -108,7 +124,11 @@ def get_class_with_parameters(_class, _class_name):
     Args:
         _class: class to retrieve the parameters and to create the object to return
         _class_name: name of the parameter that use this class
+        layer: max level of recursion
     """
+    if layer > 6:
+        return {'layer'}
+
     simple_classes = ['str', 'float', 'int', 'bool']
 
     # If the class is a list, the method has to specify it
@@ -123,7 +143,7 @@ def get_class_with_parameters(_class, _class_name):
         # Iterate over every class in the Union and add it to the list, using recursively this method
         for possible_class in _class.__args__:
             sub_class_name = possible_class.__name__
-            class_to_append = get_class_with_parameters(possible_class, sub_class_name)
+            class_to_append = get_class_with_parameters(possible_class, sub_class_name, layer + 1)
             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                 possible_classes.append(class_to_append)
 
@@ -139,7 +159,8 @@ def get_class_with_parameters(_class, _class_name):
             return
 
         try:
-            # If the class is a simple class (ex. string, int, float, etc) the method can simple build the return class object
+            # If the class is a simple class (ex. string, int, float, etc)
+            # the method can simple build the return class object
             if _class.__name__ in simple_classes:
                 return_class = {
                     'name': _class_name,
@@ -154,7 +175,7 @@ def get_class_with_parameters(_class, _class_name):
                         if sub_class.__name__ == _class_name:
                             continue
                         sub_class_name = sub_class.__name__
-                        class_to_append = get_class_with_parameters(sub_class, sub_class_name)
+                        class_to_append = get_class_with_parameters(sub_class, sub_class_name, layer + 1)
                         if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                             sub_classes.append(class_to_append)
 
@@ -176,8 +197,16 @@ def get_class_with_parameters(_class, _class_name):
 
                         class_parameters = []
 
+                        if _class is type(None):
+                            return {}
+                        if _class is type:
+                            return {}
+
                         for class_param in list(signature(_class).parameters.items()):
-                            class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0])
+                            if class_param[1].annotation is inspect._empty:
+                                class_to_append = get_class_with_parameters(type(class_param[1].default), class_param[0], layer + 1)
+                            else:
+                                class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0], layer + 1)
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                                 class_parameters.append(class_to_append)
 
@@ -193,4 +222,3 @@ def get_class_with_parameters(_class, _class_name):
             return_class = {}
 
     return return_class
-
