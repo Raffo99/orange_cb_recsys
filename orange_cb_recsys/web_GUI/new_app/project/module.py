@@ -6,25 +6,32 @@ class PossiblePageStatus(Enum):
     INCOMPLETE = 0
     COMPLETE = 1
     DISABLED = 2
-    ENABLED = 3
+
+
+class AnalyzerType(Enum):
+    ITEMS = 0
+    USERS = 1
 
 
 class Module(ABC):
 
     _pages_status = {}
-    _output_directory = ""
     _algorithms = {}
 
     def __init__(self):
+        self._output_directory = ""
         pass
 
-    def set_output_directory(self, new_output_directory):
-        self._output_directory = new_output_directory
-
-    def get_output_directory(self):
+    @property
+    def output_directory(self):
         return self._output_directory
 
-    def get_pages_status(self):
+    @output_directory.setter
+    def output_directory(self, new_output_directory):
+        self._output_directory = new_output_directory
+
+    @property
+    def pages_status(self):
         return self._pages_status
 
     def set_page_status(self, page, new_status):
@@ -34,6 +41,9 @@ class Module(ABC):
         else:
             result = False
         return result
+
+    def get_page_status(self, page):
+        return self._pages_status[page] if page in self._pages_status else None
 
     @abstractmethod
     def produce_config_file(self):
@@ -46,23 +56,37 @@ class Module(ABC):
 
 class ContentAnalyzerModule(Module):
 
-    __fields = {}
-    __content_type = ""
-    __source_path = ""
     __source_type = ""
-    __id_fields_name = []
     __order_fields = {}
 
-    def __init__(self):
+    def __init__(self, dbpedia_classes):
         super().__init__()
+        self.__analyzer_type = AnalyzerType.ITEMS
+        self.__fields = {}
+        self.__source_path = ""
+        self.__id_fields_name = []
         self.__init_pages_status()
+        self.__dbpedia_classes = dbpedia_classes
 
     def __init_pages_status(self):
         self._pages_status = {
-            "Upload": PossiblePageStatus.INCOMPLETE,
+            "Upload": PossiblePageStatus.DISABLED,
             "Fields": PossiblePageStatus.DISABLED,
-            "Algorithms": PossiblePageStatus.DISABLED
+            "Algorithms": PossiblePageStatus.DISABLED,
+            "Exogenous": PossiblePageStatus.DISABLED
         }
+
+    @property
+    def dbpedia_classes(self):
+        return self.__dbpedia_classes
+
+    @property
+    def analyzer_type(self):
+        return self.__analyzer_type
+
+    @analyzer_type.setter
+    def analyzer_type(self, new_type):
+        self.__analyzer_type = new_type
 
     def is_complete(self):
         return self._pages_status["Algorithms"] == PossiblePageStatus.COMPLETE
@@ -70,13 +94,29 @@ class ContentAnalyzerModule(Module):
     def clear_id_fields(self):
         self.__id_fields_name.clear()
 
-    def add_id_field(self, new_field):
-        self.__id_fields_name.append(new_field)
+    @property
+    def fields(self):
+        return self.__fields
 
-    def set_fields(self, new_fields):
-        self.__fields.clear()
+    @fields.setter
+    def fields(self, new_fields):
+        self.fields.clear()
         for key, value in new_fields.items():
             self.set_field(key, value)
+
+    def pop_field(self, index):
+        self.fields.pop(index)
+        self.__order_fields.pop(index)
+
+    def pop_representation(self, field_name, index):
+        self.fields[field_name].pop(index)
+
+    def set_field(self, index, new_field):
+        if "__" in index:
+            self.__order_fields[ContentAnalyzerModule.convert_key(index)] = index[index.rindex("__") + 2:]
+            self.__fields[ContentAnalyzerModule.convert_key(index)] = new_field
+        else:
+            self.__fields[index] = new_field
 
     def has_already_dataset(self):
         return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
@@ -87,61 +127,72 @@ class ContentAnalyzerModule(Module):
             return ""
         return key[:key.rindex("__")]
 
-    def get_fields(self):
-        return self.__fields
-
-    def pop_field(self, index):
-        self.__fields.pop(index)
-        self.__order_fields.pop(index)
-
-    def pop_representation(self, field_name, index):
-        self.__fields[field_name].pop(index)
-
-    def set_field(self, index, new_field):
-        if "__" in index:
-            self.__order_fields[ContentAnalyzerModule.convert_key(index)] = index[index.rindex("__") + 2:]
-            self.__fields[ContentAnalyzerModule.convert_key(index)] = new_field
-        else:
-            self.__fields[index] = new_field
-
     def order_fields(self):
         self.__order_fields = dict(sorted(self.__order_fields.items(), key=lambda x: x[1]))
-        self.__fields = dict(sorted(self.__fields.items(), key=lambda x: self.__order_fields[x[0]]))
+        self.fields = dict(sorted(self.fields.items(), key=lambda x: self.__order_fields[x[0]]))
 
     def clear_fields(self):
         self.__order_fields.clear()
-        self.__fields.clear()
+        self.fields.clear()
 
-    def get_content_production_algorithms(self):
+    @property
+    def content_production_algorithms(self):
         return self._algorithms['content_production']
 
-    def set_content_production_algorithms(self, new_algorithms):
+    @content_production_algorithms.setter
+    def content_production_algorithms(self, new_algorithms):
         self._algorithms["content_production"] = new_algorithms
 
-    def get_preprocess_algorithms(self):
+    @property
+    def preprocess_algorithms(self):
         return self._algorithms['preprocessing']
 
-    def set_preprocess_algorithms(self, new_algorithms):
+    @preprocess_algorithms.setter
+    def preprocess_algorithms(self, new_algorithms):
         self._algorithms["preprocessing"] = new_algorithms
 
-    def get_memory_interfaces(self):
+    @property
+    def memory_interfaces(self):
         return self._algorithms['memory_interface']
 
-    def set_memory_interfaces(self, new_memory_interface):
+    @memory_interfaces.setter
+    def memory_interfaces(self, new_memory_interface):
         self._algorithms["memory_interface"] = new_memory_interface
 
-    def get_source_path(self):
+    @property
+    def source_path(self):
         return self.__source_path
 
-    def set_source_path(self, new_source_path):
+    @source_path.setter
+    def source_path(self, new_source_path):
         self.__source_path = new_source_path
         self.__source_type = new_source_path[new_source_path.rindex(".") + 1:]
 
-    def set_id_fields(self, new_id_fields):
+    @property
+    def id_fields_name(self):
+        return self.__id_fields_name
+
+    @id_fields_name.setter
+    def id_fields_name(self, new_id_fields):
         self.__id_fields_name = new_id_fields
 
-    def get_id_fields(self):
-        return self.__id_fields_name
+    def add_id_field(self, new_field):
+        self.id_fields_name.append(new_field)
+
+    def produce_config_file(self):
+        type_analyzer_str = "Item" if self.__analyzer_type == AnalyzerType.ITEMS else "User"
+
+        config_file_obj = {
+            "class": type_analyzer_str + "AnalyzerConfig",
+            "source": self.__get_source_class(),
+            "id": self.id_fields_name,
+            "output_directory": self.output_directory,
+            "field_dict": self.__convert_fields(),
+            "exogenous_representation_list": None,
+            "export_json": False
+        }
+
+        return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
 
     def __convert_class(self, class_to_convert):
         class_obj = {}
@@ -182,15 +233,35 @@ class ContentAnalyzerModule(Module):
                 preprocess_list.append(technique)
         return preprocess_list
 
+    def __convert_memory_interface(self, memory_interfaces):
+        memory_interface = {}
+
+        if memory_interfaces["use"]:
+            interface = [temp for temp in memory_interfaces["algorithms"] if temp["name"] == memory_interfaces["value"]][0]
+            for parameter in interface["params"]:
+                memory_interface[parameter["name"]] = self.__convert_class(parameter)
+            memory_interface["class"] = interface["name"]
+        else:
+            return None
+
+        return memory_interface
+
     def __convert_representations(self, representations):
         converted_representations = []
         for representation in representations:
-            converted_representations.append({
+            temp_mi = self.__convert_memory_interface(representation["memory_interfaces"])
+
+            obj_to_append = {
                 "class": "FieldConfig",
                 "content_technique": self.__convert_algorithm(representation["algorithm"]),
                 "preprocessing": self.__convert_preprocess(representation["preprocess"]),
                 "id": representation["id"]
-            })
+            }
+
+            if temp_mi is not None:
+                obj_to_append["memory_interface"] = temp_mi
+
+            converted_representations.append(obj_to_append)
         return converted_representations
 
     def __convert_fields(self):
@@ -206,34 +277,84 @@ class ContentAnalyzerModule(Module):
             "has_header": True
         }
 
-    def produce_config_file(self):
-        # TODO: From class take if it is Item or User Analyzer
-        config_file_obj = {
-            "class": "ItemAnalyzerConfig",
-            "source": self.__get_source_class(),
-            "id": self.__id_fields_name,
-            "output_directory": self.get_output_directory(),
-            "field_dict": self.__convert_fields(),
-            "exogenous_representation_list": None,
-            "export_json": False
-        }
-
-        return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
-
 
 class RecommenderSystemModule(Module):
-    def __init__(self):
+
+    def __init__(self, recsys_algorithms):
         super().__init__()
+        self.__fields_dict = {}
+        self.algorithms = recsys_algorithms
+        self.__selected_algorithm = ""
+        self.__items_path = ""
+        self.__users_path = ""
+        self.__rating_path = ""
+        self.__content = None
         self.__init_pages_status()
 
     def __init_pages_status(self):
         self._pages_status = {
-            "Upload": PossiblePageStatus.INCOMPLETE,
+            "Upload": PossiblePageStatus.DISABLED,
             "Representations": PossiblePageStatus.DISABLED,
         }
+
+    @property
+    def items_path(self):
+        return self.__items_path
+
+    @items_path.setter
+    def items_path(self, new_items_path):
+        self.__items_path = new_items_path
+
+    @property
+    def users_path(self):
+        return self.__users_path
+
+    @users_path.setter
+    def users_path(self, new_users_path):
+        self.__users_path = new_users_path
+
+    @property
+    def ratings_path(self):
+        return self.__ratings_path
+
+    @ratings_path.setter
+    def rating_path(self, new_ratings_path):
+        self.__rating_path = new_ratings_path
+
+    @property
+    def field_dict(self):
+        return self.__fields_dict
+
+    @field_dict.setter
+    def field_dict(self, new_field_dict):
+        # TODO: Check if fields (and representations) in new_field_dict are present in __content
+        self.__fields_dict = new_field_dict
+
+    @property
+    def selected_algorithm(self):
+        return self.__selected_algorithm
+
+    @selected_algorithm.setter
+    def selected_algorithm(self, new_algorithm):
+        # TODO: Check if new_algorithm is in __algorithms
+        self.__selected_algorithm = new_algorithm
 
     def is_complete(self):
         return self._pages_status["Representations"] == PossiblePageStatus.COMPLETE
 
     def produce_config_file(self):
         return ""
+
+    @property
+    def content(self):
+        return self.__content
+
+    @content.setter
+    def content(self, new_content):
+        self.__content = new_content
+
+    def append_representation_field(self, field_name, id_representation):
+        if field_name in self.__fields_dict:
+            self.__fields_dict[field_name].append(id_representation)
+        else:
+            self.__fields_dict[field_name] = [id_representation]
