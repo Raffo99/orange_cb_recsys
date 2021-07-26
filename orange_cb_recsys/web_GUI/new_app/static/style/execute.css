@@ -1,0 +1,66 @@
+.header-module {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.module {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid black;
+}
+
+.wrapper-logger {
+    background-color: #f1f1f1;
+    border: 2px solid black;
+    height: 50vh;
+    padding: 20px;
+}
+
+#logger {
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    font-family: Consolas, sans-serif;
+}
+
+.not-complete {
+    opacity: 0.6;
+}
+
+.execute-module {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.config-button {
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.config-button > label {
+    cursor: pointer
+}
+
+.fit-button {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.fit-button:disabled, .fit-button:disabled label {
+    cursor: default;
+}
+
+.fit-button > label {
+    font-weight: bold;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.fit-button > img {
+    width: 26px;
+}

@@ -1,0 +1,94 @@
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
+<!DOCTYPE html>
+<head>
+    <title>ORANGE CB RECSYS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='javascript/nav-bar-left-script.js') }}"></script>
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/execute-script.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/execute.css') }}">
+</head>
+<body>
+    <div id="overlay">
+        <div id="dialog">
+            <div id="dialog-header">CONFIRMATION</div>
+            <div id="dialog-question"></div>
+            <div id="dialog-buttons">
+                <button id="dialog-yes">YES</button>
+                <button id="dialog-no">NO</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast">
+        <label></label>
+    </div>
+    <div id="header">
+        <h1>EXECUTE</h1>
+    </div>
+    {{ render_nav_bar_left(project, "Execute", "Execute") }}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-2">
+            {% if project.content_analyzer.is_complete() %}
+                <div class="module">
+            {% else %}
+                <div class="module not-complete">
+            {% endif %}
+                <div class="header-module" name="ContentAnalyzer">Content Analyzer</div>
+                <div class="execute-module">
+                    {% if project.content_analyzer.is_complete() %}
+                        <button class="fit-button">
+                    {% else %}
+                         <button class="fit-button" disabled>
+                    {% endif %}
+                        <label>Fit</label>
+                        <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                    </button>
+                    {% if project.content_analyzer.is_complete() %}
+                        <button class="config-button">
+                    {% else %}
+                         <button class="config-button" disabled>
+                    {% endif %}
+                        <label>Export config file</label>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-1"></div>
+        <div class="col-2">
+            {% if project.recommender_system.is_complete() %}
+                <div class="module">
+            {% else %}
+                <div class="module not-complete">
+            {% endif %}
+                <div class="header-module" name="RecSys">Recommender System</div>
+                <div class="execute-module">
+                    {% if project.content_analyzer.is_complete() %}
+                        <button class="fit-button">
+                    {% else %}
+                         <button class="fit-button" disabled>
+                    {% endif %}
+                        <label>Fit</label>
+                        <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-1"></div>
+        <div class="col-2">
+            <div class="module">
+                <div class="header-module" name="EvalModel">Eval Model</div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-10">
+            <div class="wrapper-logger">
+                <div id="logger"></div>
+            </div>
+        </div>
+    </div>
+</body>
