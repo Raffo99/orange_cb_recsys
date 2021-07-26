@@ -1,44 +1,101 @@
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
 <!DOCTYPE html>
 <head>
     <title>ORANGE CB RECSYS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/mainpage-script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='javascript/nav-bar-left-script.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/absolute.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/mainpage.css') }}">
 </head>
 <body>
+    <div id="overlay">
+        <div id="dialog">
+            <div id="dialog-header">CONFIRMATION</div>
+            <div id="dialog-question">Are you sure you want to delete this representation?</div>
+            <div id="dialog-buttons">
+                <button id="dialog-yes">YES</button>
+                <button id="dialog-no">NO</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast">
+        <label></label>
+    </div>
     <div id="header">
         <h1>ORANGE CB RECSYS</h1>
     </div>
-    <div id="module-forms">
-        <div class="row">
-            <div class="col-1"></div>
-            <div class="col-2 module" id="ca-module">
-                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
-                <div class="module-name">CONTENT ANALYZER</div>
-                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
-                <hr>
-                <div class="module-button-config"><button onclick="location.href='{{ url_for('ca_upload') }}';">Nuova Configurazione</button></div>
-                <div class="module-button-config"><button>Configurazione già esistente</button></div>
+    {{ render_nav_bar_left(project) }}
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="div-project">
+                <div id="wrapper-forms">
+                    <label>NEW PROJECT</label>
+                    <form method="post" action="/">
+                        <div class="project-button-config">
+                            <button type="submit" id="new-project">Create a new project</button>
+                        </div>
+                    </form>
+                    <form method="post" action="{{ url_for('load_new_project') }}" enctype=multipart/form-data id="load-project">
+                        <div class="project-button-config">
+                            <input type="file" name="pathProject"><span>Import existing project</span></input>
+                        </div>
+                    </form>
+                </div>
+                <div id="wrapper-current-project">
+                    <label>CURRENT PROJECT</label>
+                    {% if project.is_first_project() %}
+                        <div id="current-project-content" class="disabled-form">
+                    {% else %}
+                        <div id="current-project-content">
+                    {% endif %}
+                        <form method="post" action="/">
+                            <table id="table-content">
+                                <tr>
+                                    <td> Project Name </td>
+                                    {% if project.is_first_project() %}
+                                        <td> <input type="text" id="nameProject" name="nameProject" value="{{ project.name }}" disabled> .prj </td>
+                                    {% else %}
+                                        <td> <input type="text" id="nameProject" name="nameProject" value="{{ project.name }}"> .prj </td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <td> Project Save Path </td>
+                                    {% if project.is_first_project() %}
+                                        <td> <input type="text" id="savePath" name="savePath" value="{{ project.save_path }}" disabled> </td>
+                                    {% else %}
+                                        <td> <input type="text" id="savePath" name="savePath" value="{{ project.save_path }}"> </td>
+                                    {% endif %}
+                                </tr>
+                            </table>
+                            <div id="wrapper-submit">
+                                {% if project.is_first_project() %}
+                                    <button type="submit" disabled>
+                                {% else %}
+                                    <button type="submit">
+                                {% endif %}
+                                    <span>Save project config</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="col-2"></div>
-            <div class="col-2 module" id="rs-module">
-                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
-                <div class="module-name">REC SYSTEM</div>
-                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
-                <hr>
-                <div class="module-button-config"><button onclick="location.href='{{ url_for('recsys_upload') }}';">Nuova Configurazione</button></div>
-                <div class="module-button-config"><button>Configurazione già esistente</button></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div class="wrapper-errors">
+                {% for error in list_errors %}
+                <div class="div-error">
+                    {{ error | safe }}
+                </div>
+                {% endfor %}
             </div>
-            <div class="col-2"></div>
-            <div class="col-2 module" id="ev-module">
-                <div class="info-point"><img src="{{ url_for('static', filename='icons/question-circle-fill.svg') }}"></div>
-                <div class="module-name">EVALUATION MODEL</div>
-                <img class="module-icon" src="{{ url_for('static', filename='icons/ca-icon.svg') }}">
-                <hr>
-                <div class="module-button-config"><button>Nuova Configurazione</button></div>
-                <div class="module-button-config"><button>Configurazione già esistente</button></div>
-            </div>
-            <div class="col-1"></div>
         </div>
     </div>
 </body>
