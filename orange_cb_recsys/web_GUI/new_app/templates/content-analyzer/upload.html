@@ -29,11 +29,32 @@
                     <table>
                         <tr>
                             <td class="form-label"> Output directory name </td>
-                            <td> <input type="text" name="outputDir" value="{{ project.content_analyzer.get_output_directory() }}"> </td>
+                            <td> <input type="text" name="outputDir" value="{{ project.content_analyzer.output_directory }}"> </td>
                         </tr>
                         <tr>
                             <td class="form-label"> Dataset </td>
                             <td> <input type="file" name="pathDataset"> </td>
+                        </tr>
+                        <tr>
+                            <td class="form-label"> Content type </td>
+                            <td>
+                                <div class="wrapper-radio">
+                                    {% if project.content_analyzer.analyzer_type == AnalyzerType.ITEMS %}
+                                        <input type="radio" name="analyzerType" value="Items" checked>
+                                    {% else %}
+                                        <input type="radio" name="analyzerType" value="Items">
+                                    {% endif %}
+                                    <label>Items</label>
+                                </div>
+                                <div class="wrapper-radio">
+                                    {% if project.content_analyzer.analyzer_type == AnalyzerType.USERS %}
+                                        <input type="radio" name="analyzerType" value="Users" checked>
+                                    {% else %}
+                                        <input type="radio" name="analyzerType" value="Users">
+                                    {% endif %}
+                                    <label>Users</label>
+                                </div>
+                            </td>
                         </tr>
                     </table>
                 </form>
