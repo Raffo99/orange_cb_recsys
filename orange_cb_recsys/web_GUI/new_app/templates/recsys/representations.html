@@ -13,7 +13,6 @@
 {% endblock %}
 
 {% block header %}
-    <a href="{{ url_for('recsys_upload') }}"><img id="back-button" src="{{ url_for('static', filename='icons/arrow-back-icon.svg') }}"></a>
     <h1>RECOMMENDER SYSTEM</h1>
     <hr>
 {% endblock %}
@@ -25,50 +24,67 @@
 {% endblock %}
 
 {% block form_content %}
-    <div class="col-2"></div>
-    <div class="col-6">
-        <div class="header-algorithms">RECOMMENDER ALGORITHMS</div>
-        <div class="div-content-algorithms">
-            <div class="block-algorithms-selection">
-                <label>Algorithm Type</label>
-                <select class="select-algorithm" name="algtype">
-                    {% for algorithm in algorithms %}
-                        <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="block-algorithms">
-                {% for algorithm in algorithms %}
-                <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
-                    {% for param in algorithm['params'] %}
-                        {{ render_param(param, false) }}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-6">
+            <div class="header-algorithms">RECOMMENDER ALGORITHMS</div>
+            <div class="div-content-algorithms">
+                <div class="block-algorithms-selection">
+                    <label>Algorithm Type</label>
+                    <select class="select-algorithm" name="algtype">
+                        {% for algorithm in project.recommender_system.algorithms %}
+                            {% if algorithm["name"] == project.recommender_system.selected_algorithm %}
+                                <option value="{{ algorithm['name'] }}" selected>{{ algorithm['name'] }}</option>
+                            {% else %}
+                                <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="block-algorithms">
+                    {% for algorithm in project.recommender_system.algorithms %}
+                    <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                        {% for param in algorithm['params'] %}
+                            {{ render_param(param, false) }}
+                        {% endfor %}
+                    </div>
                     {% endfor %}
                 </div>
-                {% endfor %}
+            </div>
+        </div>
+        <div class="col-2">
+            <div class="header-representations">FIELDS WITH REPRESENTATIONS</div>
+            <div class="div-content-representations">
+                <div class="representations-list">
+                    {% for field in fields_representations.items() %}
+                        <div class="field-wrapper">
+                            <div class="field-name"><input type="checkbox" name="{{ field[0] }}-use">{{ field[0] }}</div>
+                                {% if field[1].get_internal_index()|length > 1 %}
+                                    <hr>
+                                    <div class="representations-list">
+                                    {% for representations in field[1].get_external_index() %}
+                                        <div class="representation-item">
+                                            <input type="checkbox" name="{{ field[0] }}-{{ representations }}">
+                                            <label class="representation-label">{{ representations }}</label>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-2">
-        <div class="header-representations">FIELDS WITH REPRESENTATIONS</div>
-        <div class="div-content-representations">
-            <div class="representations-list">
-                {% for field in fields_representations.items() %}
-                    <div class="field-wrapper">
-                        <div class="field-name">{{ field[0] }}</div>
-                            {% if field[1].get_external_index()|length > 0 %}
-                                <hr>
-                                <div class="representations-list">
-                                {% for representations in field[1].get_external_index() %}
-                                    <div class="representation-item">
-                                        <label class="representation-label">
-                                            <input type="checkbox" name="{{ field[0] }}-{{ representations }}">
-                                        {{ representations }}</label>
-                                    </div>
-                                {% endfor %}
-                                </div>
-                            {% endif %}
-                    </div>
-                {% endfor %}
+    <div class="row">
+        <div class="col-12">
+            <div id="wrapper-continue">
+                <button type="submit" id="save-form">
+                    <span>Save algorithm</span>
+                </button>
+                <button type="submit" id="continue-button">
+                    <span>Save and continue to next section</span>
+                </button>
             </div>
         </div>
     </div>
