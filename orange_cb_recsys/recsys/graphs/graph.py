@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import List, Set, Union
+from typing import List, Set, Union, Iterable
 import pandas as pd
 
 from orange_cb_recsys.recsys.graphs.graph_metrics import GraphMetrics
@@ -170,7 +170,7 @@ class Graph(ABC):
 
     @property
     @abstractmethod
-    def user_nodes(self) -> Set[Node]:
+    def user_nodes(self) -> Set[UserNode]:
         """
         Returns a set of 'user' nodes
         """
@@ -178,7 +178,7 @@ class Graph(ABC):
 
     @property
     @abstractmethod
-    def item_nodes(self) -> Set[Node]:
+    def item_nodes(self) -> Set[ItemNode]:
         """
         Returns a set of 'item' nodes'
         """
@@ -290,6 +290,18 @@ class Graph(ABC):
         Return the beneath implementation of the graph.
 
         Useful when is necessary to calculate some metrics for the graph
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _remove_nodes_from_graph(self, nodes_to_remove: Iterable):
+        """
+        PRIVATE USAGE ONLY
+
+        Used in the Feature Selection process to remove certain nodes from the graph
+
+        Args:
+            nodes_to_remove (Iterable): iterable object containing the nodes to remove from the graph
         """
         raise NotImplementedError
 
@@ -522,7 +534,7 @@ class TripartiteGraph(BipartiteGraph):
         """
         properties = None
         try:
-            properties = content.get_exogenous(exo_rep).value
+            properties = content.get_exogenous_representation(exo_rep).value
         except KeyError:
             logger.warning("Representation " + exo_rep + " not found for content " + content.content_id)
 
@@ -556,7 +568,7 @@ class TripartiteGraph(BipartiteGraph):
         properties = None
 
         try:
-            properties = content.get_exogenous(exo_rep).value
+            properties = content.get_exogenous_representation(exo_rep).value
         except KeyError:
             logger.warning("Representation " + exo_rep + " not found for content " + content.content_id)
 
@@ -597,16 +609,16 @@ class TripartiteGraph(BipartiteGraph):
         for prop in exo_props:
             property_found = False
             for id_int, id_ext in zip(internal_id_list, external_id_list):
-                if prop in content.get_exogenous(id_int).value:
+                if prop in content.get_exogenous_representation(id_int).value:
                     property_found = True
 
-                    # edge_label = director_0_dbpedia, director_1_datasetlocal
-                    # OR edge_label = director_0, edge_label = director_1 if external id is NaN
-                    edge_label = "{}_{}".format(prop, str(id_int))
+                    # edge_label = director#0#dbpedia, director#1#datasetlocal
+                    # OR edge_label = director#0, edge_label = director#1 if external id is NaN
+                    edge_label = "{}#{}".format(prop, str(id_int))
                     if pd.notna(id_ext):
-                        edge_label += '_{}'.format(id_ext)
+                        edge_label += '#{}'.format(id_ext)
 
-                    property_node = content.get_exogenous(id_int).value[prop]
+                    property_node = content.get_exogenous_representation(id_int).value[prop]
 
                     # search preference for the property in the original frame source
                     preference = self.get_preference(prop, row)
