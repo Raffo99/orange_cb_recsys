@@ -5,6 +5,7 @@ from orange_cb_recsys.content_analyzer.field_content_production_techniques.field
 from orange_cb_recsys.content_analyzer.information_processor.information_processor import InformationProcessor
 from orange_cb_recsys.content_analyzer.memory_interfaces.memory_interfaces import InformationInterface
 from orange_cb_recsys.content_analyzer.config import ExogenousConfig
+from orange_cb_recsys.content_analyzer.ratings_manager.rating_processor import RatingProcessor
 from orange_cb_recsys.recsys.recsys import RecSys
 from inspect import signature
 from abc import ABC
@@ -27,8 +28,7 @@ def get_recsys_algorithms():
     rec_sys = []
     add_algorithms(rec_sys, r_i.get_all_implemented_classes(RecSys))
 
-    rec_sys = remove_names(rec_sys, ['users_contents_dir', 'item_contents_dir', 'items_directory', 'users_directory'])
-    print(rec_sys)
+    rec_sys = remove_names(rec_sys, ['user_contents_dir', 'item_contents_dir', 'items_directory', 'users_directory'])
 
     return rec_sys
 
@@ -54,6 +54,7 @@ def get_ca_algorithms():
     preprocessing_algorithms = []
     memory_interfaces = []
     exogenous_algorithms = []
+    ratings_algorithms = []
 
     # Get all classes implemented for content_production
     content_production_classes = r_i.get_all_implemented_classes(FieldContentProductionTechnique)
@@ -63,16 +64,19 @@ def get_ca_algorithms():
     memory_interfaces_classes = r_i.get_all_implemented_classes(InformationInterface)
     # Get all classes implemented for exogenous
     exogenous_classes = r_i.get_all_implemented_classes(ExogenousConfig)
+    # Get all classes implemented for ratings
+    ratings_classes = r_i.get_all_implemented_classes(RatingProcessor)
 
     add_algorithms(content_production_algorithms, content_production_classes)
     content_production_algorithms.sort(key=lambda x: x['name'])
     add_algorithms(preprocessing_algorithms, preprocessing_classes)
     add_algorithms(memory_interfaces, memory_interfaces_classes)
     add_algorithms(exogenous_algorithms, exogenous_classes)
+    add_algorithms(ratings_algorithms, ratings_classes)
 
     remove_names(exogenous_algorithms, ["field_name_list"])
 
-    return content_production_algorithms, preprocessing_algorithms, memory_interfaces, exogenous_algorithms
+    return content_production_algorithms, preprocessing_algorithms, memory_interfaces, exogenous_algorithms, ratings_algorithms
 
 
 def add_algorithms(algorithms_list, classes_list):

@@ -1,4 +1,3 @@
-import inspect
 import io
 import logging
 
@@ -39,7 +38,8 @@ def all_test(dictionary):
 app.jinja_env.globals.update(all_python=all_test)
 
 # Global variable for the current project
-current_project = Project(get_recsys_algorithms(), get_dbpedia_classes())
+dbpedia_classes = get_dbpedia_classes()
+current_project = Project(get_recsys_algorithms(), dbpedia_classes)
 
 
 @app.route('/', methods=["POST", "GET"])
@@ -59,8 +59,10 @@ def index():
             else:
                 list_errors.append("Save path is invalid!")
         else:
-            current_project = Project(get_recsys_algorithms())
-            current_project.content_analyzer.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
+            current_project = Project(get_recsys_algorithms(), dbpedia_classes)
+            current_project.content_analyzer_items.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
+            current_project.content_analyzer_users.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
+            current_project.content_analyzer_ratings.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
             current_project.recommender_system.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
 
     return render_template("index.html", project=current_project, list_errors=list_errors)
@@ -75,46 +77,47 @@ def ca_upload():
     """
     global current_project
 
+    content_analyzer_type = request.args.get("type")
+
     if current_project.is_first_project() \
-            or current_project.content_analyzer.get_page_status("Upload") == PossiblePageStatus.DISABLED:
+            or content_analyzer_type not in current_project.content_analyzer_types \
+            or current_project.content_analyzer[content_analyzer_type].get_page_status("Upload") == PossiblePageStatus.DISABLED:
         return redirect(url_for("index"))
 
     list_errors = []
+    content_analyzer = current_project.content_analyzer[content_analyzer_type]
 
     if request.method == 'POST':
-        file = request.files['pathDataset']
-
         if is_pathname_valid(request.form["outputDir"]):
-            current_project.content_analyzer.output_directory = request.form["outputDir"]
+            content_analyzer.output_directory = request.form["outputDir"]
         else:
             list_errors.append("Wrong output directory!")
 
-        if request.form['analyzerType'] == "Items":
-            current_project.content_analyzer.analyzer_type = AnalyzerType.ITEMS
-        else:
-            current_project.content_analyzer.analyzer_type = AnalyzerType.USERS
+        try:
+            old_path = content_analyzer.source_path
+            content_analyzer.source_path = request.form['pathDataset']
 
-        if file and not(allowed_file(file.filename)):
-            list_errors.append("Wrong file type!")
+            # TODO: Support dat
+            if content_analyzer.source_type == "csv":
+                df = pd.read_csv(content_analyzer.source_path)
+                content_analyzer.fields_list = list(df.columns.values)
+            elif content_analyzer.source_type == "json":
+                data = json.load(open(content_analyzer.source_path))
+                content_analyzer.fields_list = list(data[0].keys())
 
-        if file and len(list_errors) == 0:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            content_analyzer.clear_fields()
+            content_analyzer.clear_id_fields()
 
-            current_project.content_analyzer.source_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-            current_project.content_analyzer.clear_fields()
-            current_project.content_analyzer.clear_id_fields()
-
-            current_project.content_analyzer.set_page_status("Upload", PossiblePageStatus.COMPLETE)
-            current_project.content_analyzer.set_page_status("Fields", PossiblePageStatus.INCOMPLETE)
-            current_project.content_analyzer.set_page_status("Algorithms", PossiblePageStatus.DISABLED)
-            return redirect(url_for('ca_fields'))
-        elif len(list_errors) == 0 and current_project.content_analyzer.has_already_dataset():
-            return redirect(url_for('ca_fields'))
+            content_analyzer.set_page_status("Upload", PossiblePageStatus.COMPLETE)
+            content_analyzer.set_page_status("Fields", PossiblePageStatus.INCOMPLETE)
+            content_analyzer.set_page_status("Algorithms", PossiblePageStatus.DISABLED)
+            return redirect(url_for('ca_fields') + "?type=" + content_analyzer_type)
+        except Exception:
+            content_analyzer.source_path = old_path
+            list_errors.append("Error during processing dataset!")
 
     return render_template('/content-analyzer/upload.html', project=current_project, list_errors=list_errors,
-                           AnalyzerType=AnalyzerType)
+                           content_analyzer=content_analyzer, content_type=content_analyzer_type)
 
 
 @app.route('/content-analyzer/fields', methods=['POST', 'GET'])
@@ -124,43 +127,44 @@ def ca_fields():
     """
     global current_project
 
+    content_analyzer_type = request.args.get("type")
+
     if current_project.is_first_project() \
-            or current_project.content_analyzer.get_page_status("Fields") == PossiblePageStatus.DISABLED:
+            or content_analyzer_type not in current_project.content_analyzer_types \
+            or current_project.content_analyzer[content_analyzer_type].get_page_status("Fields") == PossiblePageStatus.DISABLED:
         return redirect(url_for("index"))
+
+    content_analyzer = current_project.content_analyzer[content_analyzer_type]
 
     if request.method == "POST":
         new_fields = dict(request.form.items(multi=False))
-        for key in list(current_project.content_analyzer.fields):
+        for key in list(content_analyzer.fields_selected):
             if not(key in list(map(lambda x: ContentAnalyzerModule.convert_key(x), new_fields))):
-                current_project.content_analyzer.pop_field(key)
+                content_analyzer.pop_field(key)
 
         temp_fields_id = []
         for key, value in new_fields.items():
             if "__fieldid" in key:
                 temp_fields_id.append(key.replace("__fieldid", ""))
-            elif not (ContentAnalyzerModule.convert_key(key) in current_project.content_analyzer.fields):
-                current_project.content_analyzer.set_field(key, [])
+            elif not (ContentAnalyzerModule.convert_key(key) in content_analyzer.fields_selected):
+                content_analyzer.set_field(key, [])
 
-        current_project.content_analyzer.id_fields_name = temp_fields_id
+        content_analyzer.id_fields_name = temp_fields_id
 
-        if not current_project.content_analyzer.fields:
+        if not content_analyzer.fields_selected:
             # TODO: Dare errore nel caso in cui fields è vuoto
             return "ERRORE"
         else:
-            current_project.content_analyzer.order_fields()
+            content_analyzer.order_fields()
 
-            current_project.content_analyzer.set_page_status("Fields", PossiblePageStatus.COMPLETE)
-            current_project.content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
-            return redirect(url_for('ca_settings'))
+            content_analyzer.set_page_status("Fields", PossiblePageStatus.COMPLETE)
+            content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
+            content_analyzer.set_page_status("Exogenous", PossiblePageStatus.INCOMPLETE)
+            return redirect(url_for('ca_settings') + "?type=" + content_analyzer_type)
 
-    try:
-        # TODO: Supportare anche json e dat
-        df = pd.read_csv(current_project.content_analyzer.source_path)
-    except:
-        # TODO: Dare errore nel caso in cui pathDataset non sia settato
-        return "Errore"
-
-    return render_template('/content-analyzer/fields.html', fields=df.columns.values, project=current_project)
+    return render_template('/content-analyzer/fields.html', fields=content_analyzer.fields_list,
+                           project=current_project, content_analyzer=content_analyzer,
+                           content_type=content_analyzer_type)
 
 
 @app.route('/content-analyzer/algorithms', methods=['POST', 'GET'])
@@ -171,23 +175,40 @@ def ca_settings():
     """
     global current_project
 
+    content_analyzer_type = request.args.get("type")
+
     if current_project.is_first_project() \
-            or current_project.content_analyzer.get_page_status("Algorithms") == PossiblePageStatus.DISABLED:
+            or content_analyzer_type not in current_project.content_analyzer_types \
+            or current_project.content_analyzer[content_analyzer_type].get_page_status("Algorithms") == PossiblePageStatus.DISABLED:
         return redirect(url_for("index"))
 
-    current_project.content_analyzer.content_production_algorithms, \
-    current_project.content_analyzer.preprocess_algorithms, \
-    current_project.content_analyzer.memory_interfaces = get_ca_algorithms()
+    content_analyzer = current_project.content_analyzer[content_analyzer_type]
 
-    return render_template('/content-analyzer/settings.html', fields=current_project.content_analyzer.fields,
-                           project=current_project)
+    # TODO: This code needs to be execute in the class, not here
+    content_analyzer.content_production_algorithms, \
+        content_analyzer.preprocess_algorithms, \
+        content_analyzer.memory_interfaces,\
+        content_analyzer.exogenous_algorithms,\
+        content_analyzer.ratings_algorithms = get_ca_algorithms()
+
+    return render_template('/content-analyzer/settings.html', fields=content_analyzer.fields_selected,
+                           project=current_project, content_analyzer=content_analyzer,
+                           content_type=content_analyzer_type)
 
 
 @app.route('/content-analyzer/exogenous', methods=["POST", "GET"])
 def ca_exogenous():
     global current_project
 
-    return  ""
+    content_analyzer_type = request.args.get("type")
+
+    if current_project.is_first_project() \
+            or content_analyzer_type not in current_project.content_analyzer_types \
+            or current_project.content_analyzer[content_analyzer_type].get_page_status("Exogenous") == PossiblePageStatus.DISABLED:
+        return redirect(url_for("index"))
+
+    return render_template('content-analyzer/exogenous.html', project=current_project,
+                           content_type=content_analyzer_type)
 
 
 @app.route('/_representationformcreator', methods=['POST'])
@@ -201,7 +222,8 @@ def representation_form_creator():
     """
     global current_project
 
-    fields = current_project.content_analyzer.fields
+    content_analyzer = current_project.content_analyzer[request.json["content_type"]]
+    fields = content_analyzer.fields_selected
 
     has_representation = request.json['has_representation']
 
@@ -209,20 +231,31 @@ def representation_form_creator():
         field_name = request.json["field_name"]
         representations = fields[field_name]
     else:
-        content_production_algorithms = current_project.content_analyzer.content_production_algorithms
-        algorithm = [a for a in content_production_algorithms if a["name"] == request.json['algorithm_name']][0]
-        memory_interfaces = {
-            "algorithms": current_project.content_analyzer.memory_interfaces,
-            "value": current_project.content_analyzer.memory_interfaces[0]["name"],
-            "use": False
-        }
+        if request.json["content_type"] == "Ratings":
+            algorithms = content_analyzer.ratings_algorithms
+        else:
+            algorithms = content_analyzer.content_production_algorithms
 
-        representations = [{
-            'id': 'default',
-            'algorithm': algorithm,
-            'preprocess': current_project.content_analyzer.preprocess_algorithms,
-            'memory_interfaces': memory_interfaces
-        }]
+        algorithm = [a for a in algorithms if a["name"] == request.json['algorithm_name']][0]
+
+        if request.json["content_type"] == "Ratings":
+            representations = [{
+                'id': 'default',
+                'algorithm': algorithm
+            }]
+        else:
+            memory_interfaces = {
+                "algorithms": content_analyzer.memory_interfaces,
+                "value": content_analyzer.memory_interfaces[0]["name"],
+                "use": False
+            }
+
+            representations = [{
+                'id': 'default',
+                'algorithm': algorithm,
+                'preprocess': content_analyzer.preprocess_algorithms,
+                'memory_interfaces': memory_interfaces
+            }]
 
     return render_template("/content-analyzer/helpers/_representationformcreator.html", representations=representations)
 
@@ -243,8 +276,7 @@ def ca_update_representations():
     """
     global current_project
 
-    if current_project.is_first_project() \
-            or current_project.content_analyzer.get_page_status("Upload") == PossiblePageStatus.DISABLED:
+    if current_project.is_first_project():
         return redirect(url_for("index"))
 
     if request.form:
@@ -254,6 +286,7 @@ def ca_update_representations():
         else:
             delete_representation = True
             index_representation = request.form['index_representation']
+        content_type = request.form['content_type']
         field_name = request.form['field_name']
     else:
         if not("delete_representation" in request.json):
@@ -263,16 +296,18 @@ def ca_update_representations():
             delete_representation = True
             index_representation = request.json['index_representation']
         field_name = request.json['field_name']
+        content_type = request.json['content_type']
 
+    content_analyzer = current_project.content_analyzer[content_type]
     if delete_representation:
-        current_project.content_analyzer.pop_representation(field_name, index_representation)
+        content_analyzer.pop_representation(field_name, index_representation)
     else:
-        current_project.content_analyzer.set_field(field_name, new_representations)
+        content_analyzer.set_field(field_name, new_representations)
 
-    if any(len(representation) > 0 for representation in current_project.content_analyzer.fields.values()):
-        current_project.content_analyzer.set_page_status("Algorithms", PossiblePageStatus.COMPLETE)
+    if any(len(representation) > 0 for representation in content_analyzer.fields_selected.values()):
+        content_analyzer.set_page_status("Algorithms", PossiblePageStatus.COMPLETE)
     else:
-        current_project.content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
+        content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
 
     return ""
 
@@ -290,6 +325,7 @@ def recsys_upload():
         items_path = request.form["pathItems"]
         users_path = request.form["pathUsers"]
         output_directory = request.form["outputDir"]
+        ratings_path = request.form["pathRatings"]
         try:
             if items_path == "" and current_project.recommender_system.items_path != "" \
                     and not is_pathname_valid(items_path):
@@ -308,6 +344,12 @@ def recsys_upload():
                 list_errors.append("Output directory is invalid.")
             else:
                 current_project.recommender_system.output_directory = output_directory
+
+            if ratings_path == "" and current_project.recommender_system.ratings_path != ""\
+                    and not is_pathname_valid(ratings_path):
+                list_errors.append("Path to ratings is invalid.")
+            else:
+                current_project.recommender_system.ratings_path = ratings_path
 
             if len(list_errors) == 0:
                 list_files = [f for f in os.listdir(items_path) if os.path.isfile(join(items_path, f)) and ".xz" in f]
@@ -365,9 +407,6 @@ def execute_modules():
             new_stderr = io.StringIO()
             sys.stderr = new_stderr
 
-            old_stdout = sys.stdout
-            new_stdout = io.StringIO()
-            sys.stdout = new_stdout
 
             log_capture_string = io.StringIO()
             ch = logging.StreamHandler(log_capture_string)
@@ -375,15 +414,14 @@ def execute_modules():
             formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
             ch.setFormatter(formatter)
             logger.addHandler(ch)
+
+            print(current_project.content_analyzer.produce_config_file())
             script_run(current_project.content_analyzer.produce_config_file())
             log_com = log_capture_string.getvalue()
             log_capture_string.close()
 
-            sys.stdout = old_stdout
-
             print("log: " + log_com)
             # print("err: " + new_stderr.getvalue())
-            print("out: " + new_stdout.getvalue())
 
             sys.stderr = old_stderr
             return json.dumps({"result": log_com.replace("\n", "<br>")})
@@ -435,8 +473,8 @@ def save_current_project():
             return json.dumps({"result": "Question"})
         with open(final_path + current_project.name + ".prj", 'wb') as output:
             pickle.dump(current_project, output, pickle.HIGHEST_PROTOCOL)
-
-    except Exception:
+    except TypeError as e:
+        print(str(e))
         return json.dumps({"result": "False"})
 
     return json.dumps({"result": "True"})
