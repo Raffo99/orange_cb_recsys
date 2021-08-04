@@ -27,6 +27,7 @@
             </div>
         </div>
         {% endif %}
+        {% if 'preprocess' in representation %}
         <div class="div-representation-header">
             <div class="header-label">NLP</div>
         </div>
@@ -49,6 +50,8 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
+        {% if 'memory_interfaces' in representation %}
         <div class="div-representation-header">
             <div class="header-label">Memory Interfaces</div>
         </div>
@@ -86,6 +89,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}
