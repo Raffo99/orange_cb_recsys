@@ -17,44 +17,22 @@
 {% endblock %}
 
 {% block nav_bar_left %}
-    {{ render_nav_bar_left(project, "Upload", "ContentAnalyzer") }}
+    {{ render_nav_bar_left(project, "Upload", "ContentAnalyzer" + content_type) }}
 {% endblock %}
 
 {% block form_content %}
-
         <div class="row">
-            <div class="col-4"></div>
-            <div class="col-4">
-                <form id="ca-form-upload" method="post" enctype=multipart/form-data>
+            <div class="col-3"></div>
+            <div class="col-6">
+                <form id="ca-form-upload" method="post">
                     <table>
                         <tr>
-                            <td class="form-label"> Output directory name </td>
-                            <td> <input type="text" name="outputDir" value="{{ project.content_analyzer.output_directory }}"> </td>
+                            <td class="form-label"> Output path directory </td>
+                            <td><input type="text" name="outputDir" value="{{ content_analyzer.output_directory }}"></td>
                         </tr>
                         <tr>
                             <td class="form-label"> Dataset </td>
-                            <td> <input type="file" name="pathDataset"> </td>
-                        </tr>
-                        <tr>
-                            <td class="form-label"> Content type </td>
-                            <td>
-                                <div class="wrapper-radio">
-                                    {% if project.content_analyzer.analyzer_type == AnalyzerType.ITEMS %}
-                                        <input type="radio" name="analyzerType" value="Items" checked>
-                                    {% else %}
-                                        <input type="radio" name="analyzerType" value="Items">
-                                    {% endif %}
-                                    <label>Items</label>
-                                </div>
-                                <div class="wrapper-radio">
-                                    {% if project.content_analyzer.analyzer_type == AnalyzerType.USERS %}
-                                        <input type="radio" name="analyzerType" value="Users" checked>
-                                    {% else %}
-                                        <input type="radio" name="analyzerType" value="Users">
-                                    {% endif %}
-                                    <label>Users</label>
-                                </div>
-                            </td>
+                            <td><input type="text" name="pathDataset" value="{{ content_analyzer.source_path }} "></td>
                         </tr>
                     </table>
                 </form>
@@ -73,7 +51,7 @@
             <div class="col-4"></div>
             <div class="col-4">
                 <div id="wrapper-continue">
-                    <button form="ca-form-upload" type="submit" >
+                    <button form="ca-form-upload" id="continue-button" type="submit" >
                         <span>Save and continue to next section</span>
                     </button>
                 </div>

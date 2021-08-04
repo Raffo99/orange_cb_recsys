@@ -21,7 +21,7 @@
 {% block sub_header %} <h4>Settings Content Analyzer</h4> {% endblock %}
 
 {% block nav_bar_left %}
-    {{ render_nav_bar_left(project, "Algorithms", "ContentAnalyzer") }}
+    {{ render_nav_bar_left(project, "Algorithms", "ContentAnalyzer" + content_type) }}
 {% endblock %}
 
 {% block form_content %}
@@ -50,11 +50,19 @@
                         <label>New Representation</label>
                     </div>
                     <div id="new-representation-options">
-                        {% for algorithm in project.content_analyzer.content_production_algorithms %}
-                        <div class="new-representation-option">
-                            <label>{{ algorithm['name'] }}</label>
-                        </div>
-                        {% endfor %}
+                        {% if content_type == "Ratings" %}
+                            {% for algorithm in content_analyzer.ratings_algorithms %}
+                                <div class="new-representation-option">
+                                    <label>{{ algorithm['name'] }}</label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            {% for algorithm in content_analyzer.content_production_algorithms %}
+                            <div class="new-representation-option">
+                                <label>{{ algorithm['name'] }}</label>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="representation-list">

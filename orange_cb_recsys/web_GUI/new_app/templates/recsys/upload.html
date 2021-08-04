@@ -28,7 +28,7 @@
             <form action="{{ url_for('recsys_upload') }}" id="recsys-form-upload" method="post" enctype=multipart/form-data>
                 <table>
                     <tr>
-                        <td class="form-label"> Output directory name </td>
+                        <td class="form-label"> Output path directory </td>
                         <td> <input type="text" id="outputDir" name="outputDir" value="{{ project.recommender_system.output_directory }}"> </td>
                     </tr>
                     <tr>
@@ -38,6 +38,10 @@
                     <tr>
                         <td class="form-label"> Users path directory </td>
                         <td> <input type="text" id="pathUsers" name="pathUsers" value="{{ project.recommender_system.users_path }}"> </td>
+                    </tr>
+                    <tr>
+                        <td class="form-label"> Ratings path directory </td>
+                        <td> <input type="text" id="pathRatings" name="pathRatings" value="{{ project.recommender_system.rating_path }}"> </td>
                     </tr>
                 </table>
             </form>

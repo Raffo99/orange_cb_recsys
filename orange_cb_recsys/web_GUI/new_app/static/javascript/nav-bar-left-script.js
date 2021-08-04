@@ -9,6 +9,28 @@ $(document).ready(function () {
         $(this).children("label").stop().fadeToggle();
     })
 
+    $("#content-analyzer").children(".pages").children(".page").children(".page-status").click(function () {
+        let toActiveName = $(this).parent().children("label").text().toLowerCase();
+        let toRemoveName = "";
+
+        if ($("#content-analyzer").children(".sub-pages.active-sub-pages").length > 0) {
+            toRemoveName = $("#content-analyzer").children(".sub-pages.active-sub-pages").attr('name').replace("sub-pages-", "").toLowerCase();
+
+            $("#content-analyzer").children(".sub-pages.active-sub-pages").animate({width: 'toggle'}, function () {
+                $(this).removeClass("active-sub-pages");
+            });
+        }
+
+        if (toRemoveName != toActiveName) {
+            $("#content-analyzer").children("[name='sub-pages-" + toActiveName + "']").animate({width: 'toggle'}, function () {
+                $("#content-analyzer").children("[name='sub-pages-" + toActiveName + "']").addClass("active-sub-pages");
+            });
+
+            $("#content-analyzer").children("[name='sub-pages-" + toActiveName + "']").css("display", "flex");
+        }
+    });
+
+
     $("#save-button").click(function () {
         $.ajax({
             url: "/save-current-project",

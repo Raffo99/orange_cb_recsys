@@ -7,10 +7,7 @@
     background-color: #f1f1f1!important;
     box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
     justify-content: center;
-}
-
-input[type="file"] {
-    width: 50%;
+    width: 100%;
 }
 
 #submit-cell {
@@ -19,7 +16,7 @@ input[type="file"] {
 }
 
 input[type="text"] {
-    width: 80%;
+    width: 95%;
 }
 
 .errors {
@@ -33,6 +30,7 @@ input[type="text"] {
 .form-label {
     font-weight: bold;
     padding: 20px;
+    width: 25%;
 }
 
 #header {

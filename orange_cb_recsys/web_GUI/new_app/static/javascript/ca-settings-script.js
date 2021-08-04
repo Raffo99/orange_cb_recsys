@@ -1,5 +1,22 @@
 import { changeActiveBlock, fixName, getClassWithParameters, showToast } from "./utils-functions.js";
 
+let $_GET = {};
+
+if(document.location.toString().indexOf('?') !== -1) {
+    var query = document.location
+                   .toString()
+                   // get the query string
+                   .replace(/^.*?\?/, '')
+                   // and remove any existing hash string (thanks, @vrijdenker)
+                   .replace(/#.*$/, '')
+                   .split('&');
+
+    for(var i=0, l=query.length; i<l; i++) {
+       var aux = decodeURIComponent(query[i]).split('=');
+       $_GET[aux[0]] = aux[1];
+    }
+}
+
 // Method used to save the current active field
 function saveField() {
     let fieldName = $(".active-field").text();
@@ -46,23 +63,32 @@ function saveField() {
             })
         });
 
-        representations.push({
+        let toPush = {
             "id": idRepresentation,
             "algorithm": {
                 'name': fixName($(this).find(".representation-algorithm-name").text(), true),
                 'params': parameters
-            },
-            'preprocess': nlpTechniques,
-            'memory_interfaces': {
+            }
+        }
+
+        if (nlpTechniques.length > 0) {
+            toPush["preprocess"] = nlpTechniques
+        }
+
+        if (memory_interfaces_algorithms.length > 0) {
+            toPush["memory_interfaces"] = {
                 'algorithms': memory_interfaces_algorithms,
                 'value': miTable.children(".block-algorithms-selection").children("select").val(),
                 'use': miTable.children(".block-algorithms-selection").children("input[type=checkbox]").prop('checked')
             }
-        });
+        }
+
+        representations.push(toPush);
     });
 
     let fd = new FormData();
     fd.append('field_name', fieldName);
+    fd.append('content_type', $_GET["type"])
     fd.append('representations', JSON.stringify(representations));
 
     navigator.sendBeacon("/ca-update-representations", fd);
@@ -75,6 +101,7 @@ function loadField(nameField, listToAppend) {
         url: "/_representationformcreator",
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify({
+            'content_type': $_GET["type"],
             'field_name': nameField,
             'has_representation': true
         }),
@@ -156,6 +183,7 @@ $(document).ready(function () {
             url: "/_representationformcreator",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify({
+                'content_type': $_GET["type"],
                 'algorithm_name': $(this).find("label").text(),
                 'has_representation': false
             }),
@@ -209,6 +237,7 @@ $(document).ready(function () {
             url: "/ca-update-representations",
             contentType: 'application/json; charset=UTF-8',
             data: JSON.stringify({
+                'content_type': $_GET["type"],
                 'delete_representation': true,
                 'field_name': fieldName,
                 'index_representation': indexRepresentation

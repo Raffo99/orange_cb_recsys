@@ -1,21 +1,37 @@
-{% macro render_nav_bar_left(project, current_page, current_module) %}
+{% macro render_nav_bar_left(project, current_page="Index", current_module="None") %}
     <div id="nav-bar-left">
         <a href="{{ url_for('index') }}" id="home-button"><img src="{{ url_for('static', filename='icons/home-icon.svg') }}"></a>
-        {% if current_module == "ContentAnalyzer" or project.content_analyzer.is_complete() %}
+        {% if current_module.startswith("ContentAnalyzer") %}
             <div class="module-status" id="content-analyzer" style="background-color: #F79E02;">
         {% else %}
             <div class="module-status" id="content-analyzer">
         {% endif %}
             <label>Content Analyzer</label>
             <div class="pages">
-                {% for name_page, status in project.content_analyzer.pages_status.items() %}
+                {% for module_name, module in project.content_analyzer.items() %}
+                <div class="page">
+                    <label>{{ module_name|upper }}</label>
+                    <div class="page-status">
+                        {% if current_module.endswith(module_name) %}
+                        <div class="status current"></div>
+                        {% else %}
+                        <div class="status {{ module.get_module_status().name|lower }}"></div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% for module_name, module in project.content_analyzer.items() %}
+            <div class="sub-pages" name="sub-pages-{{ module_name|lower }}">
+                <label>{{ module_name|upper }}</label>
+                {% for name_page, status in project.content_analyzer[module_name|capitalize].pages_status.items() %}
                     {% if status.name != "DISABLED" %}
-                        <a href="../content-analyzer/{{ name_page|lower }}">
+                        <a href="../content-analyzer/{{ name_page|lower }}?type={{ module_name|capitalize }}">
                     {% endif %}
                     <div class="page">
                         <label>{{ name_page|upper }}</label>
                         <div class="page-status">
-                            {% if current_page == name_page and current_module == "ContentAnalyzer" %}
+                            {% if current_page == name_page and current_module == ("ContentAnalyzer" + (module_name|capitalize)) %}
                                 <div class="status current"></div>
                             {% else %}
                                 <div class="status {{ status.name|lower }}"></div>
@@ -27,6 +43,7 @@
                     {% endif %}
                 {% endfor %}
             </div>
+            {% endfor %}
         </div>
         {% if current_module == "RecSys" or project.recommender_system.is_complete() %}
             <div class="module-status" id="recsys" style="background-color: #4285F4;">

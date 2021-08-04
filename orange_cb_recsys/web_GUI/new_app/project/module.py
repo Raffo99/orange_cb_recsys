@@ -45,6 +45,14 @@ class Module(ABC):
     def get_page_status(self, page):
         return self._pages_status[page] if page in self._pages_status else None
 
+    def get_module_status(self):
+        status = PossiblePageStatus.COMPLETE if \
+            all(self.pages_status[page_status] == PossiblePageStatus.COMPLETE for page_status in self.pages_status) else (
+                PossiblePageStatus.DISABLED if
+                all(self.pages_status[page_status] == PossiblePageStatus.DISABLED for page_status in self.pages_status) else
+                PossiblePageStatus.INCOMPLETE)
+        return status
+
     @abstractmethod
     def produce_config_file(self):
         pass
@@ -62,11 +70,18 @@ class ContentAnalyzerModule(Module):
     def __init__(self, dbpedia_classes):
         super().__init__()
         self.__analyzer_type = AnalyzerType.ITEMS
-        self.__fields = {}
+        self.__fields_selected = {}
+        self.__fields_list = []
         self.__source_path = ""
         self.__id_fields_name = []
         self.__init_pages_status()
         self.__dbpedia_classes = dbpedia_classes
+        self.__ratings_properties = {
+            "from_id": 0,
+            "to_id": 1,
+            "score": 2,
+            "timestamp": 3
+        }
 
     def __init_pages_status(self):
         self._pages_status = {
@@ -75,6 +90,50 @@ class ContentAnalyzerModule(Module):
             "Algorithms": PossiblePageStatus.DISABLED,
             "Exogenous": PossiblePageStatus.DISABLED
         }
+
+    @property
+    def ratings_properties(self):
+        return self.__ratings_properties
+
+    @property
+    def from_id_column(self):
+        return self.__ratings_properties["from_id"]
+
+    @from_id_column.setter
+    def from_id_column(self, new_id):
+        self.__ratings_properties["from_id"] = new_id
+
+    @property
+    def to_id_column(self):
+        return self.__ratings_properties["to_id"]
+
+    @to_id_column.setter
+    def to_id_column(self, new_id):
+        self.__ratings_properties["to_id"] = new_id
+
+    @property
+    def score_column(self):
+        return self.__ratings_properties["score"]
+
+    @score_column.setter
+    def score_column(self, new_id):
+        self.__ratings_properties["score"] = new_id
+
+    @property
+    def timestamp_column(self):
+        return self.__ratings_properties["timestamp"]
+
+    @timestamp_column.setter
+    def timestamp_column(self, new_id):
+        self.__ratings_properties["timestamp"] = new_id
+
+    @property
+    def fields_list(self):
+        return self.__fields_list
+
+    @fields_list.setter
+    def fields_list(self, new_fields_list):
+        self.__fields_list = new_fields_list
 
     @property
     def dbpedia_classes(self):
@@ -95,28 +154,31 @@ class ContentAnalyzerModule(Module):
         self.__id_fields_name.clear()
 
     @property
-    def fields(self):
-        return self.__fields
+    def fields_selected(self):
+        return self.__fields_selected
 
-    @fields.setter
-    def fields(self, new_fields):
-        self.fields.clear()
+    @fields_selected.setter
+    def fields_selected(self, new_fields):
+        self.fields_selected.clear()
         for key, value in new_fields.items():
             self.set_field(key, value)
 
     def pop_field(self, index):
-        self.fields.pop(index)
+        self.fields_selected.pop(index)
         self.__order_fields.pop(index)
 
     def pop_representation(self, field_name, index):
-        self.fields[field_name].pop(index)
+        try:
+            self.fields_selected[field_name].pop(index)
+        except IndexError:
+            print("IndexError")
 
     def set_field(self, index, new_field):
         if "__" in index:
             self.__order_fields[ContentAnalyzerModule.convert_key(index)] = index[index.rindex("__") + 2:]
-            self.__fields[ContentAnalyzerModule.convert_key(index)] = new_field
+            self.__fields_selected[ContentAnalyzerModule.convert_key(index)] = new_field
         else:
-            self.__fields[index] = new_field
+            self.__fields_selected[index] = new_field
 
     def has_already_dataset(self):
         return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
@@ -129,11 +191,11 @@ class ContentAnalyzerModule(Module):
 
     def order_fields(self):
         self.__order_fields = dict(sorted(self.__order_fields.items(), key=lambda x: x[1]))
-        self.fields = dict(sorted(self.fields.items(), key=lambda x: self.__order_fields[x[0]]))
+        self.fields_selected = dict(sorted(self.fields_selected.items(), key=lambda x: self.__order_fields[x[0]]))
 
     def clear_fields(self):
         self.__order_fields.clear()
-        self.fields.clear()
+        self.fields_selected.clear()
 
     @property
     def content_production_algorithms(self):
@@ -160,13 +222,33 @@ class ContentAnalyzerModule(Module):
         self._algorithms["memory_interface"] = new_memory_interface
 
     @property
+    def exogenous_algorithms(self):
+        return self._algorithms["exogenous"]
+
+    @exogenous_algorithms.setter
+    def exogenous_algorithms(self, new_exogenous):
+        self._algorithms["exogenous"] = new_exogenous
+
+    @property
+    def ratings_algorithms(self):
+        return self._algorithms["ratings"]
+
+    @ratings_algorithms.setter
+    def ratings_algorithms(self, new_ratings):
+        self._algorithms["ratings"] = new_ratings
+
+    @property
     def source_path(self):
         return self.__source_path
 
     @source_path.setter
     def source_path(self, new_source_path):
-        self.__source_path = new_source_path
+        self.__source_path = new_source_path.strip()
         self.__source_type = new_source_path[new_source_path.rindex(".") + 1:]
+
+    @property
+    def source_type(self):
+        return self.__source_type
 
     @property
     def id_fields_name(self):
@@ -211,7 +293,11 @@ class ContentAnalyzerModule(Module):
             elif "params" in class_to_convert:
                 class_obj = {"class": class_to_convert["name"]}
                 for parameter in class_to_convert["params"]:
-                    class_obj[parameter["name"]] = self.__convert_class(parameter)
+                    if parameter["type"] == "kwargs":
+                        for custom_param_name, custom_param_value in parameter["params"].items():
+                            class_obj[custom_param_name] = custom_param_value
+                    else:
+                        class_obj[parameter["name"]] = self.__convert_class(parameter)
         else:
             return class_to_convert["value"]
 
@@ -266,16 +352,20 @@ class ContentAnalyzerModule(Module):
 
     def __convert_fields(self):
         converted_fields = {}
-        for name_field, representations in self.__fields.items():
+        for name_field, representations in self.__fields_selected.items():
             converted_fields[name_field] = self.__convert_representations(representations)
         return converted_fields
 
     def __get_source_class(self):
-        return {
+        obj_return = {
             "class": self.__source_type + "file",
             "file_path": self.__source_path,
-            "has_header": True
         }
+
+        if self.__source_type == "csv":
+            obj_return["has_header"] = True
+
+        return obj_return
 
 
 class RecommenderSystemModule(Module):
@@ -318,7 +408,7 @@ class RecommenderSystemModule(Module):
         return self.__ratings_path
 
     @ratings_path.setter
-    def rating_path(self, new_ratings_path):
+    def ratings_path(self, new_ratings_path):
         self.__rating_path = new_ratings_path
 
     @property
