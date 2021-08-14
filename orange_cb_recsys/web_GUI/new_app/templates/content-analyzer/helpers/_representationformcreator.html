@@ -1,5 +1,5 @@
 {% from "content-analyzer/helpers/_dynamicformhelper.html" import render_representation %}
 
 {% for representation in representations %}
-    {{ render_representation(representation) }}
+    {{ render_representation(representation, fields_list) }}
 {% endfor %}

@@ -1,6 +1,6 @@
 {% from "helpers/_parmshelper.html" import render_param %}
 
-{% macro render_representation(representation) %}
+{% macro render_representation(representation, fields_list) %}
 <div class="div-representation">
     <div class="wrapper-name-id">
         <button class="close-representation">–</button>
@@ -22,7 +22,7 @@
         <div class="div-representation-content">
             <div class="parameters-table">
                 {% for param in representation['algorithm']['params'] %}
-                    {{ render_param(param, false) }}
+                    {{ render_param(param, false, fields_list) }}
                 {% endfor %}
             </div>
         </div>
@@ -44,7 +44,7 @@
                             <label>{{ technique['name'] }}</label>
                         </div>
                         {% for param in technique['params'] %}
-                            {{ render_param(param, false) }}
+                            {{ render_param(param, false, fields_list) }}
                         {% endfor %}
                     </div>
                 {% endfor %}
@@ -82,7 +82,7 @@
                         <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
                         {% endif %}
                         {% for param in algorithm['params'] %}
-                            {{ render_param(param, false) }}
+                            {{ render_param(param, false, fields_list) }}
                         {% endfor %}
                          </div>
                     {% endfor %}
