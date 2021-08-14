@@ -1,4 +1,4 @@
-{% macro render_param(param, union_parameter) %}
+{% macro render_param(param, union_parameter, fields_list, current_project) %}
 {% if not union_parameter %}
 <div class="block-parameter">
 {% endif %}
@@ -54,7 +54,7 @@
                     {% else %}
                     <div class="block-parameter {% if 'params' in sub_class and sub_class['params']|length == 0 %}empty{% endif %}" name="{{ param['name'] }}-{{ sub_class['name'] }}">
                     {% endif %}
-                    {{ render_param(sub_class, true) }}
+                    {{ render_param(sub_class, true, fields_list, current_project) }}
                 </div>
                 {% endfor %}
             </div>
@@ -62,7 +62,7 @@
         {% if 'params' in param %}
             <label>{{ param['name'] }}</label>
             {% for parm in param['params'] %}
-                {{ render_param(parm, false) }}
+                {{ render_param(parm, false, fields_list, current_project) }}
             {% endfor %}
         {% endif %}
         </div>
@@ -84,11 +84,11 @@
             {% for possible_value in param['params'] %}
                 {% if ("value" in param and param['value'] == possible_value['name']) or (not "value" in param and loop.index == 1) %}
                 <div class="block-parameter active-block" name="{{ param['name'] }}-{{ possible_value['name'] }}">
-                    {{ render_param(possible_value, true) }}
+                    {{ render_param(possible_value, true, fields_list, current_project) }}
                 </div>
                 {% else %}
                 <div class="block-parameter" name="{{ param['name'] }}-{{ possible_value['name'] }}">
-                    {{ render_param(possible_value, true) }}
+                    {{ render_param(possible_value, true, fields_list, current_project) }}
                 </div>
                 {% endif %}
             {% endfor %}
@@ -113,6 +113,24 @@
                     <button class="add-kwargs-button">Add Parameter</button>
                 </div>
             </div>
+        </div>
+    {% endif %}
+    {% if param["type"] == "field_from_db" %}
+        <div class="block-parameter-container">
+            <label>{{ param['name'] }}</label>
+            <select class="select-from-db">
+                {% for field in fields_list %}
+                    <option value="{{ field['name'] }}">{{ field['name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+    {% if param["type"] == "exogenous_props" %}
+        <label>{{ param["listType"] }}_exogenous_properties</label>
+        <div class="exo-list">
+            {% for technique in current_project.recommender_system.exogenous_techniques[param["listType"]] %}
+            <div class="exo-prop"><input type="checkbox" name="{{ technique }}-use"> {{ technique }} </div>
+            {% endfor %}
         </div>
     {% endif %}
     {% if not union_parameter %}
