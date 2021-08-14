@@ -1,13 +1,14 @@
-from .module import ContentAnalyzerModule, RecommenderSystemModule, PossiblePageStatus
+from .module import ItemsContentAnalyzerModule, UsersContentAnalyzerModule, RatingsContentAnalyzerModule, \
+    RecommenderSystemModule, PossiblePageStatus
 
 
 class Project(object):
-    def __init__(self, recsys_algorithms, dbpedia_classes):
+    def __init__(self, ca_algorithms, recsys_algorithms, dbpedia_classes):
         self.modules = {
             "ContentAnalyzer": {
-                "Items": ContentAnalyzerModule(dbpedia_classes),
-                "Users": ContentAnalyzerModule(dbpedia_classes),
-                "Ratings": ContentAnalyzerModule(dbpedia_classes)
+                "Items": ItemsContentAnalyzerModule(ca_algorithms, dbpedia_classes),
+                "Users": UsersContentAnalyzerModule(ca_algorithms, dbpedia_classes),
+                "Ratings": RatingsContentAnalyzerModule(ca_algorithms, dbpedia_classes)
             },
             "RecSys": RecommenderSystemModule(recsys_algorithms)
         }
@@ -40,5 +41,10 @@ class Project(object):
 
     def is_first_project(self):
         return self.recommender_system.get_page_status("Upload") == PossiblePageStatus.DISABLED
+
+    def is_content_analyzer_complete(self, type_content):
+        if type_content in self.modules["ContentAnalyzer"].keys():
+            return self.content_analyzer[type_content].is_complete()
+        return False
 
 
