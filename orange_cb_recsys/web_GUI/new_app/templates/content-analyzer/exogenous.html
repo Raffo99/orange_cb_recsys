@@ -1,0 +1,62 @@
+{% extends "base-settings-module.html" %}
+{% from "helpers/_parmshelper.html" import render_param %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
+{% block title %}
+    Content Analyzer
+{% endblock %}
+
+{% block header_import %}
+    <title>Exogenous Content Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-exogenous.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
+    <script>
+        let entityList = [
+            {% for entity in entity_list %}
+                "{{ entity }}",
+            {% endfor %}
+        ];
+    </script>
+    <script type=module src="{{ url_for('static', filename='javascript/ca-exogenous-script.js') }}"></script>
+{% endblock %}
+
+{% block header %}
+    <h1>CONTENT ANALYZER</h1>
+    <hr>
+{% endblock %}
+
+{% block sub_header %} <h4>Exogenous Content Analyzer</h4> {% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Exogenous", "ContentAnalyzer" + content_type) }}
+{% endblock %}
+
+{% block form_content %}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-2">
+            <div class="header-exogenous">LIST EXOGENOUS TECHNIQUES</div>
+            <div id="nav-bar-techniques">
+                <div id="list-techniques">
+                    {% for technique in exogenous %}
+                    <div class="technique">
+                        <label>{{ technique["content"][0]["params"][1]["value"] }}</label>
+                        <img class='delete-exo' src='../../static/icons/delete-icon.svg'>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="button-new-technique">Add New Technique</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="header-exogenous">EXOGENOUS TECHNIQUE</div>
+            <div class="div-exogenous">
+            </div>
+        </div>
+        <div class="col-2">
+            <div class="header-fields">FIELDS LIST TO USE</div>
+            <div class="div-content-fields">
+            </div>
+        </div>
+    </div>
+{% endblock %}

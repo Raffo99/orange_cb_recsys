@@ -1,0 +1,18 @@
+{% from "helpers/_parmshelper.html" import render_param %}
+
+{
+    "exogenous_div": '
+        {% for param in technique["content"][0]["params"] %}
+            {{ render_param(param, false, technique["fields_list"]) }}
+        {% endfor %}',
+    "fields_list": '
+        {% for field in technique["fields_list"] %}
+            <div class="field-wrapper">
+                {% if field['value'] %}
+                <div class="field-name"><input type="checkbox" name="{{ field['name'] }}-use" checked><label>{{ field['name'] }}</label></div>
+                {% else %}
+                <div class="field-name"><input type="checkbox" name="{{ field['name'] }}-use"><label>{{ field['name'] }}</label></div>
+                {% endif %}
+            </div>
+        {% endfor %}'
+}
