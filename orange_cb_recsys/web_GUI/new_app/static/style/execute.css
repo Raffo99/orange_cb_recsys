@@ -1,7 +1,7 @@
 .header-module {
     text-align: center;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .module {
@@ -41,6 +41,10 @@
     cursor: pointer;
 }
 
+.config-button:disabled > label, .config-button:disabled {
+    cursor: default;
+}
+
 .config-button > label {
     cursor: pointer
 }
@@ -63,4 +67,16 @@
 
 .fit-button > img {
     width: 26px;
+}
+
+.wrapper-content-type {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.wrapper-content-type input {
+    padding-right: 10px;
+    width: 20px;
 }

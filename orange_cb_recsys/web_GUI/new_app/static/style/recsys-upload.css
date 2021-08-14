@@ -39,6 +39,11 @@ input[type='text'] {
     width: 90%;
 }
 
+input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+}
+
 input[type='image'] {
     height: 50px;
     order: 2;

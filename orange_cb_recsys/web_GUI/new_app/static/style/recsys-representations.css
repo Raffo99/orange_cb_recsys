@@ -259,3 +259,13 @@ input[type=text], input[type=number] {
 .delete-arg {
     cursor: pointer;
 }
+
+.exo-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+}
+
+.exo-prop {
+    padding: 5px;
+}

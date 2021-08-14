@@ -73,7 +73,7 @@
 
 .block-sub-classes > .block-parameter > .block-parameter-container {
     border: 1px solid black;
-    border-radius: 5+px;
+    border-radius: 5px;
     padding: 10px 0px 0px 10px;
 }
 
@@ -303,10 +303,8 @@
 }
 
 .input-name-id {
-    border: 0px;
     font-size: 15px;
     margin-left: 5px;
-    background-color: #f1f1f1!important;
 }
 
 .input-name-id:focus {
