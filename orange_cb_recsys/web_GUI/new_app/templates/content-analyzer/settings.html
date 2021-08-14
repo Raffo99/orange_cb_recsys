@@ -10,7 +10,11 @@
     <title>Settings Content Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-settings.css') }}">
     <script type=text/javascript src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
-    <script type=module src="{{ url_for('static', filename='javascript/ca-settings-script.js') }}"></script>
+    {% if content_type == "Ratings" %}
+        <script type=module src="{{ url_for('static', filename='javascript/ca-settings-ratings-script.js') }}"></script>
+    {% else %}
+        <script type=module src="{{ url_for('static', filename='javascript/ca-settings-script.js') }}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block header %}

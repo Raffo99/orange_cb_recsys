@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block header_import %}
-    <title>Impostazioni Content Analyzer</title>
+    <title>Recsys</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/recsys-representations.css') }}">
     <script type=module src="{{ url_for('static', filename='javascript/recsys-representations-script.js') }}"></script>
 {% endblock %}
@@ -45,7 +45,7 @@
                     {% for algorithm in project.recommender_system.algorithms %}
                     <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
                         {% for param in algorithm['params'] %}
-                            {{ render_param(param, false) }}
+                            {{ render_param(param, false, project.recommender_system.field_dict, project) }}
                         {% endfor %}
                     </div>
                     {% endfor %}
@@ -56,16 +56,16 @@
             <div class="header-representations">FIELDS WITH REPRESENTATIONS</div>
             <div class="div-content-representations">
                 <div class="representations-list">
-                    {% for field in fields_representations.items() %}
+                    {% for field, representations in fields_representations["Items"].items() %}
                         <div class="field-wrapper">
-                            <div class="field-name"><input type="checkbox" name="{{ field[0] }}-use">{{ field[0] }}</div>
-                                {% if field[1].get_internal_index()|length > 1 %}
+                            <div class="field-name"><input type="checkbox" name="{{ field }}-use">{{ field }}</div>
+                                {% if representations|length > 0 %}
                                     <hr>
                                     <div class="representations-list">
-                                    {% for representations in field[1].get_external_index() %}
+                                    {% for representation in representations %}
                                         <div class="representation-item">
-                                            <input type="checkbox" name="{{ field[0] }}-{{ representations }}">
-                                            <label class="representation-label">{{ representations }}</label>
+                                            <input type="checkbox" name="{{ field }}-{{ representation }}">
+                                            <label class="representation-label">{{ representation }}</label>
                                         </div>
                                     {% endfor %}
                                     </div>
