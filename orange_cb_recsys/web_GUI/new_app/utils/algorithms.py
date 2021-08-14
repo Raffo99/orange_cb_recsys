@@ -74,9 +74,13 @@ def get_ca_algorithms():
     add_algorithms(exogenous_algorithms, exogenous_classes)
     add_algorithms(ratings_algorithms, ratings_classes)
 
-    remove_names(exogenous_algorithms, ["field_name_list"])
+    exogenous_algorithms = remove_names(exogenous_algorithms, ['field_name_list'])
 
-    return content_production_algorithms, preprocessing_algorithms, memory_interfaces, exogenous_algorithms, ratings_algorithms
+    return {"content_production": content_production_algorithms,
+            "preprocessing": preprocessing_algorithms,
+            "memory_interfaces": memory_interfaces,
+            "exogenous": exogenous_algorithms,
+            "ratings": ratings_algorithms}
 
 
 def add_algorithms(algorithms_list, classes_list):
@@ -117,7 +121,7 @@ def add_algorithms(algorithms_list, classes_list):
             algorithms_list.append({'name': algorithm_class.__name__})
 
 
-def get_class_with_parameters(_class, _class_name, layer, default_value=None):
+def get_class_with_parameters(_class, _class_name, default_value=None):
     """
     Recursive method that support the add_algorithms method, it takes in input a class and return an object of
     the class like  this typo:
@@ -137,19 +141,20 @@ def get_class_with_parameters(_class, _class_name, layer, default_value=None):
     Args:
         _class: class to retrieve the parameters and to create the object to return
         _class_name: name of the parameter that use this class
-        layer: max level of recursion
     """
-    if layer > 6:
-        return {'layer'}
 
     simple_classes = ['str', 'float', 'int', 'bool']
 
     # If the class is a list, the method has to specify it
     if hasattr(_class, "__origin__") and _class.__origin__ is list:
+        class_type = "exogenous_props" if "exo_properties" in _class_name else "List"
+        list_type = _class.__args__[0].__name__ if "exo_properties" not in _class_name else \
+            (_class_name[:_class_name.find("_")] + "s").capitalize()
+
         return {
             "name": _class_name,
-            "type": "List",
-            "listType": _class.__args__[0].__name__
+            "type": class_type,
+            "listType": list_type
         }
 
     # If the class is a Union of class, the method has to iterate the method over every class of the Union
@@ -159,7 +164,7 @@ def get_class_with_parameters(_class, _class_name, layer, default_value=None):
         # Iterate over every class in the Union and add it to the list, using recursively this method
         for possible_class in _class.__args__:
             sub_class_name = possible_class.__name__
-            class_to_append = get_class_with_parameters(possible_class, sub_class_name, layer + 1)
+            class_to_append = get_class_with_parameters(possible_class, sub_class_name)
             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                 possible_classes.append(class_to_append)
 
@@ -170,16 +175,17 @@ def get_class_with_parameters(_class, _class_name, layer, default_value=None):
             'params': possible_classes
         }
     else:
-
-
         try:
             # If the class is a simple class (ex. string, int, float, etc)
             # the method can simple build the return class object
             if _class.__name__ in simple_classes:
+                type_class = "field_from_db" if _class_name == "label_field" else _class.__name__
+
                 return_class = {
                     'name': _class_name,
-                    'type': _class.__name__
+                    'type': type_class
                 }
+
                 if default_value is not inspect._empty and default_value is not None:
                     return_class["value"] = default_value
             else:
@@ -191,7 +197,7 @@ def get_class_with_parameters(_class, _class_name, layer, default_value=None):
                         if sub_class.__name__.lower() == _class_name.lower():
                             continue
                         sub_class_name = sub_class.__name__
-                        class_to_append = get_class_with_parameters(sub_class, sub_class_name, layer + 1)
+                        class_to_append = get_class_with_parameters(sub_class, sub_class_name)
                         if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                             sub_classes.append(class_to_append)
 
@@ -221,7 +227,7 @@ def get_class_with_parameters(_class, _class_name, layer, default_value=None):
 
                         for class_param in list(signature(_class).parameters.items()):
                             class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0],
-                                                                        layer + 1, class_param[1].default)
+                                                                        class_param[1].default)
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
                                 class_parameters.append(class_to_append)
 
