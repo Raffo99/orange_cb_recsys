@@ -23,9 +23,9 @@
 
 {% block form_content %}
     <div class="row">
-        <div class="col-4"></div>
-        <div class="col-4">
-            <form action="{{ url_for('recsys_upload') }}" id="recsys-form-upload" method="post" enctype=multipart/form-data>
+        <div class="col-3"></div>
+        <div class="col-6">
+            <form id="recsys-form-upload" method="post" enctype=multipart/form-data>
                 <table>
                     <tr>
                         <td class="form-label"> Output path directory </td>
@@ -34,14 +34,29 @@
                     <tr>
                         <td class="form-label"> Items path directory </td>
                         <td> <input type="text" id="pathItems" name="pathItems" value="{{ project.recommender_system.items_path }}"> </td>
+                        {% if project.is_content_analyzer_complete("Items") %}
+                        <td> <input type="checkbox" id="useContentItems" name="useContentItems"> Use CA </td>
+                        {% else %}
+                        <td> <input type="checkbox" id="useContentItems" name="useContentItems" disabled> Use CA </td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td class="form-label"> Users path directory </td>
                         <td> <input type="text" id="pathUsers" name="pathUsers" value="{{ project.recommender_system.users_path }}"> </td>
+                        {% if project.is_content_analyzer_complete("Users") %}
+                        <td> <input type="checkbox" id="useContentUsers" name="useContentUsers"> Use CA </td>
+                        {% else %}
+                        <td> <input type="checkbox" id="useContentUsers" name="useContentUsers" disabled> Use CA </td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td class="form-label"> Ratings path directory </td>
                         <td> <input type="text" id="pathRatings" name="pathRatings" value="{{ project.recommender_system.rating_path }}"> </td>
+                        {% if project.is_content_analyzer_complete("Ratings") %}
+                        <td> <input type="checkbox" id="useContentRatings" name="useContentRatings"> Use CA </td>
+                        {% else %}
+                        <td> <input type="checkbox" id="useContentRatings" name="useContentRatings" disabled> Use CA </td>
+                        {% endif %}
                     </tr>
                 </table>
             </form>
