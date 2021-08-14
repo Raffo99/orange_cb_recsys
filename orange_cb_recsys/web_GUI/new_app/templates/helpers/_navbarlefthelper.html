@@ -15,7 +15,11 @@
                         {% if current_module.endswith(module_name) %}
                         <div class="status current"></div>
                         {% else %}
-                        <div class="status {{ module.get_module_status().name|lower }}"></div>
+                        {% if project.is_first_project() %}
+                            <div class="status disabled"></div>
+                        {% else %}
+                            <div class="status {% if project.is_content_analyzer_complete(module_name|capitalize) %} complete {% else %} incomplete {% endif %}"></div>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
