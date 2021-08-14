@@ -27,30 +27,12 @@ def get_all_dbpedia_types():
     return _types
 
 
-def get_all_dbpedia_class_property(_class: str):
-    query = "select distinct ?property where {"
-    query += "?property <http://www.w3.org/2000/01/rdf-schema#domain> <http://dbpedia.org/ontology/" + _class + "> . }"
-
-    _properties = []
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    for result in results["results"]["bindings"]:
-        type_ = str(result["property"]["value"])
-        data = type_.split('/')
-        _properties.append(data[4])
-
-    return _properties
-
-
 def get_dbpedia_classes():
     _classes = {}
     _types = get_all_dbpedia_types()
 
     for index, _type in enumerate(_types):
-        # _properties = get_all_dbpedia_class_property(_type)
         _classes[_type] = "_properties"
-        print("Total: " + str(index + 1) + "/" + str(len(_types)))
 
     return _classes
 
