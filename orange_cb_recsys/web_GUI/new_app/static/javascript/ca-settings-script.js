@@ -214,8 +214,10 @@ $(document).ready(function () {
 
         dialogOverlay.children("#dialog-question").text("Are you sure you want to delete this representation?");
 
+        dialogOverlay.children("#dialog-buttons").children("#dialog-yes").unbind("click");
         dialogOverlay.children("#dialog-buttons").children("#dialog-yes").click(yesDelete);
 
+        dialogOverlay.children("#dialog-buttons").children("#dialog-no").unbind("click");
         dialogOverlay.children("#dialog-buttons").children("#dialog-no").click(function () {
             $("#overlay").fadeOut();
         });
