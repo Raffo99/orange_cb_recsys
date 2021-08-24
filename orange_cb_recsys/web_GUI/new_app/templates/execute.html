@@ -30,15 +30,30 @@
     {{ render_nav_bar_left(project, "Execute", "Execute") }}
     <div class="row">
         <div class="col-2"></div>
-        <div class="col-2">
-            {% if project.content_analyzer.is_complete() %}
+        <div class="col-8">
+            {% if project.content_analyzer_items.is_complete() %}
                 <div class="module">
             {% else %}
                 <div class="module not-complete">
             {% endif %}
                 <div class="header-module" name="ContentAnalyzer">Content Analyzer</div>
-                <div class="execute-module">
-                    {% if project.content_analyzer.is_complete() %}
+                <div class="wrapper-content-type">
+                    {% for nameModule, module in project.modules["ContentAnalyzer"].items() %}
+                        {% if module.is_complete() %}
+                            <div class="wrapper-type">
+                                <input type="radio" name="content-type-analyzer" value="{{ nameModule }}">
+                                <label>{{ nameModule }}</label>
+                            </div>
+                        {% else %}
+                            <div class="wrapper-type">
+                                <input type="radio" name="content-type-analyzer" value="{{ nameModule }}" disabled>
+                                <label>{{ nameModule }}</label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="wrapper-buttons">
+                    {% if project.content_analyzer_items.is_complete() %}
                         <button class="fit-button">
                     {% else %}
                          <button class="fit-button" disabled>
@@ -46,7 +61,7 @@
                         <label>Fit</label>
                         <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
                     </button>
-                    {% if project.content_analyzer.is_complete() %}
+                    {% if project.content_analyzer_items.is_complete() %}
                         <button class="config-button">
                     {% else %}
                          <button class="config-button" disabled>
@@ -56,38 +71,72 @@
                 </div>
             </div>
         </div>
-        <div class="col-1"></div>
-        <div class="col-2">
+    </div>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
             {% if project.recommender_system.is_complete() %}
                 <div class="module">
             {% else %}
                 <div class="module not-complete">
             {% endif %}
                 <div class="header-module" name="RecSys">Recommender System</div>
-                <div class="execute-module">
-                    {% if project.content_analyzer.is_complete() %}
-                        <button class="fit-button">
+                    {% if project.recommender_system.is_complete() %}
+                        <div class="wrapper-fit-recsys">
+                            <div class="parameter-fit">
+                                <label> Users ID List </label>
+                                <div class="add-item">
+                                    <button class="add-item-button">Add User</button>
+                                </div>
+                                <div class="list-possible-parameter" id="users-list"></div>
+                            </div>
+                            <div class="parameter-fit">
+                                <label> Items ID List </label>
+                                <div class="add-item">
+                                    <button class="add-item-button">Add Item</button>
+                                </div>
+                                <div class="list-possible-parameter" id="items-list"></div>
+                            </div>
+                            <div class="parameter-fit">
+                                <label>Rank Number</label><input type="number" id="rank-number">
+                            </div>
+                        </div>
+                        <div class="wrapper-buttons">
+                            <button class="config-button">
+                                <label>Export config file</label>
+                            </button>
+                            <button class="fit-button-rank">
+                                <label>Fit Rank</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                            <button class="fit-button-predict">
+                                <label>Fit Predict</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                        </div>
                     {% else %}
-                         <button class="fit-button" disabled>
+                        <div class="wrapper-buttons">
+                            <button class="config-button">
+                                <label>Export config file</label>
+                            </button>
+                            <button class="fit-button-rank">
+                                <label>Fit Rank</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                            <button class="fit-button-predict">
+                                <label>Fit Predict</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                        </div>
                     {% endif %}
-                        <label>Fit</label>
-                        <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="col-1"></div>
-        <div class="col-2">
-            <div class="module">
-                <div class="header-module" name="EvalModel">Eval Model</div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-1"></div>
-        <div class="col-10">
-            <div class="wrapper-logger">
-                <div id="logger"></div>
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="module">
+                <div class="header-module" name="EvalModel">Eval Model</div>
             </div>
         </div>
     </div>

@@ -11,28 +11,8 @@
     border: 2px solid black;
 }
 
-.wrapper-logger {
-    background-color: #f1f1f1;
-    border: 2px solid black;
-    height: 50vh;
-    padding: 20px;
-}
-
-#logger {
-    background-color: white;
-    height: 100%;
-    width: 100%;
-    padding: 10px;
-    font-family: Consolas, sans-serif;
-}
-
 .not-complete {
     opacity: 0.6;
-}
-
-.execute-module {
-    display: flex;
-    justify-content: space-evenly;
 }
 
 .config-button {
@@ -74,9 +54,103 @@
     flex-direction: row;
     align-items: center;
     margin-bottom: 10px;
+    justify-content: space-evenly;
 }
 
-.wrapper-content-type input {
-    padding-right: 10px;
+.wrapper-type {
+    display: flex;
+    align-items: center;
+}
+
+.wrapper-type > label {
+    margin-left: 5px;
+}
+
+.wrapper-fit-recsys {
+    overflow: auto;
+    display: flex;
+    justify-content: space-evenly;
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+input[type=number] {
+    width: 50px;
+}
+
+.fit-button-rank {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    padding: 5px;
+    order: 3;
+    margin-top: auto;
+}
+
+.fit-button-rank > img {
     width: 20px;
+}
+
+.fit-button-rank > label {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.fit-button-predict {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    padding: 5px;
+    order: 3;
+    margin-top: auto;
+}
+
+.fit-button-predict > img {
+    width: 20px;
+}
+
+.fit-button-predict > label {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.parameter-fit {
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.parameter-fit > label {
+    padding: 5px;
+    font-weight: bold;
+}
+
+.wrapper-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 10px;
+}
+
+.delete-item {
+    width: 25px;
+    cursor: pointer;
+}
+
+.item-possible-parameter {
+    display: flex;
+    margin: 5px;
+}
+
+.list-possible-parameter {
+    height: 200px;
+    overflow: auto;
+    margin: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.list-possible-parameter:empty {
+    border: 0px;
 }

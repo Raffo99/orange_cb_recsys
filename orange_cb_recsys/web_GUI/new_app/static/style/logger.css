@@ -1,0 +1,14 @@
+.wrapper-logger {
+    background-color: #f1f1f1;
+    border: 2px solid black;
+    height: 50vh;
+    padding: 20px;
+}
+
+#logger {
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    font-family: Consolas, sans-serif;
+}
