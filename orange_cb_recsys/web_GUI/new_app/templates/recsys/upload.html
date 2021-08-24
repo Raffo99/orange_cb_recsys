@@ -33,27 +33,27 @@
                     </tr>
                     <tr>
                         <td class="form-label"> Items path directory </td>
-                        <td> <input type="text" id="pathItems" name="pathItems" value="{{ project.recommender_system.items_path }}"> </td>
+                        <td> <input type="text" id="pathItems" name="pathItems" value="{{ project.recommender_system.items_path }}" {% if project.recommender_system.is_path_items_from_ca() %} disabled {% endif %}> </td>
                         {% if project.is_content_analyzer_complete("Items") %}
-                        <td> <input type="checkbox" id="useContentItems" name="useContentItems"> Use CA </td>
+                        <td> <input type="checkbox" id="useContentItems" name="useContentItems" {% if project.recommender_system.is_path_items_from_ca() %} checked {% endif %}> Use CA </td>
                         {% else %}
                         <td> <input type="checkbox" id="useContentItems" name="useContentItems" disabled> Use CA </td>
                         {% endif %}
                     </tr>
                     <tr>
                         <td class="form-label"> Users path directory </td>
-                        <td> <input type="text" id="pathUsers" name="pathUsers" value="{{ project.recommender_system.users_path }}"> </td>
+                        <td> <input type="text" id="pathUsers" name="pathUsers" value="{{ project.recommender_system.users_path }}" {% if project.recommender_system.is_path_users_from_ca() %} disabled {% endif %}> </td>
                         {% if project.is_content_analyzer_complete("Users") %}
-                        <td> <input type="checkbox" id="useContentUsers" name="useContentUsers"> Use CA </td>
+                        <td> <input type="checkbox" id="useContentUsers" name="useContentUsers" {% if project.recommender_system.is_path_users_from_ca() %} checked {% endif %}> Use CA </td>
                         {% else %}
                         <td> <input type="checkbox" id="useContentUsers" name="useContentUsers" disabled> Use CA </td>
                         {% endif %}
                     </tr>
                     <tr>
                         <td class="form-label"> Ratings path directory </td>
-                        <td> <input type="text" id="pathRatings" name="pathRatings" value="{{ project.recommender_system.rating_path }}"> </td>
+                        <td> <input type="text" id="pathRatings" name="pathRatings" value="{{ project.recommender_system.ratings_path }}" {% if project.recommender_system.is_path_ratings_from_ca() %} disabled {% endif %}> </td>
                         {% if project.is_content_analyzer_complete("Ratings") %}
-                        <td> <input type="checkbox" id="useContentRatings" name="useContentRatings"> Use CA </td>
+                        <td> <input type="checkbox" id="useContentRatings" name="useContentRatings" {% if project.recommender_system.is_path_ratings_from_ca() %} checked {% endif %}> Use CA </td>
                         {% else %}
                         <td> <input type="checkbox" id="useContentRatings" name="useContentRatings" disabled> Use CA </td>
                         {% endif %}

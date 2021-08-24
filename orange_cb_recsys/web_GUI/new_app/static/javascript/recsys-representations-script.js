@@ -1,4 +1,4 @@
-import { changeActiveBlock, getClassWithParameters } from "./utils-functions.js";
+import { changeActiveBlock, getClassWithParameters, showToast } from "./utils-functions.js";
 
 function saveAlgorithms() {
     let listAlgorithms = []
@@ -29,7 +29,7 @@ function saveAlgorithms() {
 
                fieldRepresentations.push({
                    "name": representationName,
-                   "use": $(this).children(".representation-label").children("input").prop("checked")
+                   "use": $(this).children("input").prop("checked")
                });
             });
 
@@ -51,6 +51,8 @@ function saveAlgorithms() {
             "listFields": listFields
         })
     });
+
+    showToast("Algorithm saved successfully!", 2000);
 }
 
 $(document).ready(function () {

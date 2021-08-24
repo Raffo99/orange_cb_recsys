@@ -69,6 +69,24 @@ export function getClassWithParameters(blockParameter) {
                 "type": "kwargs",
                 "params": argsDict
             }
+        } else if (blockParameterContainer.children("[class='exo-list']").length > 0) {
+            console.log("test");
+            let nameParameter = blockParameterContainer.children("label").text()
+            let listType = "Items";
+            if (nameParameter.includes("Users")) listType = "Users";
+            let listUse = [];
+
+            blockParameterContainer.children(".exo-list").children(".exo-prop").each(function () {
+                if ($(this).children("input").is(":checked")) listUse.push($(this).children("label").text());
+            });
+
+            console.log(listUse)
+            return {
+                "name": nameParameter,
+                "type": "exogenous_props",
+                "listType": listType,
+                "list": listUse
+            }
         } else {
             let value = blockParameterContainer.children("input").attr("type") == "checkbox" ?
                 blockParameterContainer.children("input").is(":checked") :

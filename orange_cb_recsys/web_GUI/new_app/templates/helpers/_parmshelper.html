@@ -1,4 +1,11 @@
 {% macro render_param(param, union_parameter, fields_list, current_project) %}
+{% if param["name"] in ["item_field", "rating_frame", "items_directory", "users_directory", "user_contents_dir", "item_contents_dir", "source_frame"] %}
+<div class="block-parameter blocked">
+    <div class="block-parameter-container">
+        <label>{{ param['name'] }}</label>
+    </div>
+</div>
+{% else %}
 {% if not union_parameter %}
 <div class="block-parameter">
 {% endif %}
@@ -126,14 +133,20 @@
         </div>
     {% endif %}
     {% if param["type"] == "exogenous_props" %}
-        <label>{{ param["listType"] }}_exogenous_properties</label>
-        <div class="exo-list">
-            {% for technique in current_project.recommender_system.exogenous_techniques[param["listType"]] %}
-            <div class="exo-prop"><input type="checkbox" name="{{ technique }}-use"> {{ technique }} </div>
-            {% endfor %}
+        <div class="block-parameter-container">
+            <label>{{ param["listType"] }}_exogenous_properties</label>
+            <div class="exo-list">
+                {% for technique in current_project.recommender_system.exogenous_techniques[param["listType"]] %}
+                <div class="exo-prop">
+                    <input type="checkbox" {% if "list" in param and technique in param["list"] %} checked {% endif %}>
+                    <label>{{ technique }}</label>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
     {% if not union_parameter %}
     </div>
     {% endif %}
+{% endif %}
 {% endmacro %}

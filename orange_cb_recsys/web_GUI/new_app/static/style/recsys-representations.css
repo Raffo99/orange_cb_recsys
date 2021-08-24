@@ -269,3 +269,8 @@ input[type=text], input[type=number] {
 .exo-prop {
     padding: 5px;
 }
+
+.blocked {
+    font-weight: bold;
+    display: none;
+}

@@ -1,6 +1,3 @@
-import io
-import logging
-
 import pandas as pd
 import os
 import yaml
@@ -12,18 +9,15 @@ from werkzeug.utils import secure_filename
 from os.path import join, dirname, realpath
 from pathlib import Path
 
-from orange_cb_recsys.utils.const import logger
 from orange_cb_recsys.utils.load_content import load_content_instance
 from orange_cb_recsys.content_analyzer.content_representation.content import Content
 
-from utils.algorithms import get_ca_algorithms
-from utils.algorithms import get_recsys_algorithms
-from utils.forms import allowed_file, is_pathname_valid, get_dbpedia_classes
-from project import Project, ContentAnalyzerModule, PossiblePageStatus, AnalyzerType
+from utils.algorithms import get_ca_algorithms, get_recsys_algorithms, get_eval_algorithms
+from utils.forms import is_pathname_valid, get_dbpedia_classes
+from project import Project, ContentAnalyzerModule, PossiblePageStatus
 
-from orange_cb_recsys.script_handling import script_run
+
 import sys
-
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -43,7 +37,9 @@ try:
 except Exception:
     print("Error while loading dbpedia classes, these won't be used")
     dbpedia_classes = []
-current_project = Project(get_ca_algorithms(), get_recsys_algorithms(), dbpedia_classes)
+
+print(get_eval_algorithms())
+current_project = Project(get_ca_algorithms(), get_recsys_algorithms(), get_eval_algorithms(), dbpedia_classes)
 
 
 @app.route('/', methods=["POST", "GET"])
@@ -63,7 +59,7 @@ def index():
             else:
                 list_errors.append("Save path is invalid!")
         else:
-            current_project = Project(get_ca_algorithms(), get_recsys_algorithms(), dbpedia_classes)
+            current_project = Project(get_ca_algorithms(), get_recsys_algorithms(), get_eval_algorithms(), dbpedia_classes)
             current_project.content_analyzer_items.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
             current_project.content_analyzer_users.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
             current_project.content_analyzer_ratings.set_page_status("Upload", PossiblePageStatus.INCOMPLETE)
@@ -171,14 +167,15 @@ def ca_fields():
             content_analyzer.id_fields_name = temp_fields_id
             content_analyzer.order_fields()
 
-        if content_analyzer_type == "Ratings" or content_analyzer.fields_selected:
-            content_analyzer.set_page_status("Fields", PossiblePageStatus.COMPLETE)
-            content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
-            content_analyzer.set_page_status("Exogenous", PossiblePageStatus.INCOMPLETE)
-            return redirect(url_for('ca_settings') + "?type=" + content_analyzer_type)
-        else:
-            # TODO: Dare errore nel caso in cui fields è vuoto
-            return "ERRORE"
+        content_analyzer.set_page_status("Fields", PossiblePageStatus.COMPLETE)
+        content_analyzer.set_page_status("Algorithms", PossiblePageStatus.INCOMPLETE)
+        content_analyzer.set_page_status("Exogenous", PossiblePageStatus.INCOMPLETE)
+
+        if len(content_analyzer.fields_selected) == 0:
+            content_analyzer.set_page_status("Algorithms", PossiblePageStatus.DISABLED)
+            content_analyzer.set_page_status("Exogenous", PossiblePageStatus.DISABLED)
+
+        return redirect(url_for('ca_settings') + "?type=" + content_analyzer_type)
 
     return render_template('/content-analyzer/fields.html', fields=content_analyzer.fields_list,
                            project=current_project, content_analyzer=content_analyzer,
@@ -257,8 +254,6 @@ def ca_update_exogenous():
             content_analyzer.set_page_status("Exogenous", PossiblePageStatus.COMPLETE)
         else:
             content_analyzer.set_page_status("Exogenous", PossiblePageStatus.INCOMPLETE)
-
-    print(content_analyzer.exogenous_techniques)
 
     return {"result": True}
 
@@ -379,6 +374,18 @@ def ca_update_representations():
     else:
         content_analyzer.set_field(field_name, new_representations)
 
+    if content_type == "Items":
+        current_project.recommender_system.field_dict = [{
+            'name': name_field,
+            'use': False,
+            'representations': [
+                {
+                    'name': rep["id"],
+                    'use': False
+                } for rep in reps
+            ]
+        } for name_field, reps in content_analyzer.fields_selected.items()]
+
     if any(len(representation) > 0 for representation in content_analyzer.fields_selected.values()):
         content_analyzer.set_page_status("Algorithms", PossiblePageStatus.COMPLETE)
     else:
@@ -399,30 +406,37 @@ def recsys_upload():
     if request.method == 'POST':
         items_ca = request.form["useContentItems"] if "useContentItems" in request.form else False
         current_project.recommender_system.set_path_from_ca("Items", items_ca)
+
         users_ca = request.form["useContentUsers"] if "useContentUsers" in request.form else False
         current_project.recommender_system.set_path_from_ca("Users", users_ca)
+
         ratings_ca = request.form["useContentRatings"] if "useContentRatings" in request.form else False
         current_project.recommender_system.set_path_from_ca("Ratings", ratings_ca)
 
-        items_path = request.form["pathItems"] if "pathItems" in request.form else ""
-        users_path = request.form["pathUsers"] if "pathUsers" in request.form else ""
-        ratings_path = request.form["pathRatings"] if "pathRatings" in request.form else ""
+        items_path = request.form["pathItems"] if "pathItems" in request.form \
+            else current_project.content_analyzer_items.source_path
+        users_path = request.form["pathUsers"] if "pathUsers" in request.form \
+            else current_project.content_analyzer_users.source_path
+        ratings_path = request.form["pathRatings"] if "pathRatings" in request.form \
+            else current_project.content_analyzer_ratings.source_path
 
         output_directory = request.form["outputDir"]
 
         try:
             # TODO: Users is not used in some algs, so no checks in future
-            # Various checks fro the paths of items, users and ratings
+            # Various checks for the paths of items, users and ratings
             if not items_ca and items_path == "" and current_project.recommender_system.items_path != "" \
                     and not is_pathname_valid(items_path):
                 list_errors.append("Path to items is invalid.")
             else:
                 current_project.recommender_system.items_path = items_path
+
             if not users_ca and users_path == "" and current_project.recommender_system.users_path != "" \
                     and not is_pathname_valid(users_path):
                 list_errors.append("Path to users is invalid.")
             else:
                 current_project.recommender_system.users_path = users_path
+
             if not ratings_ca and ratings_path == "" and current_project.recommender_system.ratings_path != ""\
                     and not is_pathname_valid(ratings_path):
                 list_errors.append("Path to ratings is invalid.")
@@ -453,6 +467,7 @@ def recsys_upload():
     return render_template("./recsys/upload.html", list_errors=list_errors, project=current_project)
 
 
+# TODO: Move these functions in utils
 def check_contents(path_to_content, content_type):
     global current_project
 
@@ -510,6 +525,7 @@ def recsys_representations():
     if current_project.recommender_system.is_path_users_from_ca():
         get_fields_and_exogenous("Users")
 
+    print(current_project.recommender_system.algorithms)
     return render_template("./recsys/representations.html",
                            fields_representations=current_project.recommender_system.fields_representations,
                            exogenous=current_project.recommender_system.exogenous_techniques,
@@ -525,7 +541,51 @@ def update_recsys_algorithm():
         current_project.recommender_system.selected_algorithm = request.json["selectedAlgorithm"]
         current_project.recommender_system.field_dict = request.json["listFields"]
 
+    if current_project.recommender_system.selected_algorithm != "":
+        current_project.recommender_system.set_page_status("Representations", PossiblePageStatus.COMPLETE)
+
     return ""
+
+
+@app.route("/evalmodel/settings", methods=["POST", "GET"])
+def evalmodel_settings():
+    global current_project
+
+    return render_template("./evalmodel/settings.html",
+                           project=current_project)
+
+
+@app.route("/update-evalmodel-algorithms", methods=["POST"])
+def update_evalmodel_algorithms():
+    global current_project
+
+    if request.method == "POST":
+        print(current_project.eval_model.algorithms)
+        current_project.eval_model.algorithms = request.json["algorithms"]
+        print(current_project.eval_model.algorithms)
+        print("--------------------------------------")
+        print(request.json["algorithms"])
+        current_project.eval_model.selected_algorithms = request.json["selectedAlgorithms"]
+
+    current_project.eval_model.set_page_status("Settings", PossiblePageStatus.COMPLETE)
+
+    return ""
+
+
+@app.route("/logger", methods=["GET"])
+def logger():
+    global current_project
+
+    return render_template("./logger.html", project=current_project)
+
+
+@app.route("/get-logger", methods=["POST"])
+def get_logger():
+    global current_project
+
+    log = current_project.get_current_log()
+
+    return json.dumps({"log": log})
 
 
 @app.route("/execute-modules", methods=["POST", "GET"])
@@ -535,28 +595,22 @@ def execute_modules():
     if request.method == "POST":
         if request.json["module"] == "ContentAnalyzer":
             content_type = request.json["contentType"]
-            old_stderr = sys.stderr
-            new_stderr = io.StringIO()
-            sys.stderr = new_stderr
+            current_project.content_analyzer[content_type].check_output_directory()
+            script = current_project.content_analyzer[content_type].produce_config_file()
+        elif request.json["module"] == "RecSys":
+            method = request.json["method"]
+            config_file = current_project.recommender_system.produce_config_file()
+            module = config_file["class"]
+            config_file.pop("class")
+            script = [{"module": module.lower(),
+                       "output_directory": current_project.recommender_system.output_directory,
+                       method: request.json["params"]}]
+            script[0].update(config_file)
+            print(script)
 
-            log_capture_string = io.StringIO()
-            ch = logging.StreamHandler(log_capture_string)
-            ch.setLevel(logging.DEBUG)
-            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-            ch.setFormatter(formatter)
-            logger.addHandler(ch)
+        current_project.run(script)
 
-            print(current_project.content_analyzer[content_type].produce_config_file())
-            script_run(current_project.content_analyzer[content_type].produce_config_file())
-            log_com = log_capture_string.getvalue()
-            log_capture_string.close()
-
-            print("log: " + log_com)
-            # print("err: " + new_stderr.getvalue())
-
-            sys.stderr = old_stderr
-            return json.dumps({"result": log_com.replace("\n", "<br>")})
-
+        return json.dumps({"result": "True"})
     return render_template("./execute.html", project=current_project)
 
 
@@ -571,13 +625,16 @@ def save_config_file():
             if module == "ContentAnalyzer":
                 content_type = request.json["contentType"]
                 config_file = current_project.modules[module][content_type].produce_config_file()
-            else:
+                name_file = "content_analyzer_" + content_type.lower() + "_config"
+            elif module == "RecSys":
                 config_file = current_project.modules[module].produce_config_file()
+                name_file = "recsys_config"
 
-            with open(current_project.save_path + "/" + current_project.name + "/content_analyzer_config.json", "w") as outfile:
+            print(current_project.save_path + "/" + current_project.name + "/" + name_file + ".json")
+            with open(current_project.save_path + "/" + current_project.name + "/" + name_file + ".json", "w") as outfile:
                 json.dump(config_file, outfile, indent=4)
 
-            with open(current_project.save_path + "/" + current_project.name + "/content_analyzer_config.yaml", "w") as outfile:
+            with open(current_project.save_path + "/" + current_project.name + "/" + name_file + ".yaml", "w") as outfile:
                 yaml.dump(config_file, outfile)
 
         except KeyError:

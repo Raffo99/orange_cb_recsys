@@ -3,11 +3,11 @@ $(document).ready(function () {
         $("#pathItems").prop("disabled", $(this).is(":checked"));
     });
 
-    $("useContentUsers").click(function () {
+    $("#useContentUsers").click(function () {
         $("#pathUsers").prop("disabled", $(this).is(":checked"));
     });
 
-    $("useContentRatings").click(function () {
+    $("#useContentRatings").click(function () {
         $("#pathRatings").prop("disabled", $(this).is(":checked"));
     });
 });

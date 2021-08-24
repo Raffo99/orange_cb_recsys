@@ -56,16 +56,16 @@
             <div class="header-representations">FIELDS WITH REPRESENTATIONS</div>
             <div class="div-content-representations">
                 <div class="representations-list">
-                    {% for field, representations in fields_representations["Items"].items() %}
+                    {% for field in project.recommender_system.field_dict %}
                         <div class="field-wrapper">
-                            <div class="field-name"><input type="checkbox" name="{{ field }}-use">{{ field }}</div>
-                                {% if representations|length > 0 %}
+                            <div class="field-name"><input type="checkbox" name="{{ field['name'] }}-use" {% if field['use'] %} checked {% endif %}>{{ field['name'] }}</div>
+                                {% if field['representations']|length > 0 %}
                                     <hr>
                                     <div class="representations-list">
-                                    {% for representation in representations %}
+                                    {% for representation in field['representations'] %}
                                         <div class="representation-item">
-                                            <input type="checkbox" name="{{ field }}-{{ representation }}">
-                                            <label class="representation-label">{{ representation }}</label>
+                                            <input type="checkbox" name="{{ field['name'] }}-{{ representation['name'] }}" {% if representation['use'] %} checked {% endif %}>
+                                            <label class="representation-label">{{ representation['name'] }}</label>
                                         </div>
                                     {% endfor %}
                                     </div>
