@@ -1,0 +1,122 @@
+{% extends "base-settings-module.html" %}
+{% from "helpers/_parmshelper.html" import render_param %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
+{% block title %}
+    Eval Model
+{% endblock %}
+
+{% block header_import %}
+    <title>EvalModel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/eval-metrics.css') }}">
+    <script type=module src="{{ url_for('static', filename='javascript/eval-metrics-script.js') }}"></script>
+{% endblock %}
+
+{% block header %}
+    <h1>EVAL MODEL</h1>
+    <hr>
+{% endblock %}
+
+{% block sub_header %} <h4>Setting Eval Model</h4> {% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Metrics", "EvalModel") }}
+{% endblock %}
+
+{% block form_content %}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="header-algorithms">PARTITIONING ALGORITHMS</div>
+            <div class="div-content-algorithms" id="partitioning">
+                <div class="block-algorithms-selection">
+                    <label>Algorithm</label>
+                    <select class="select-algorithm" name="algtype">
+                        {% for algorithm in project.eval_model.partitioning_algorithms %}
+                            {% if algorithm["name"] == project.eval_model.selected_partitioning %}
+                                <option value="{{ algorithm['name'] }}" selected>{{ algorithm['name'] }}</option>
+                            {% else %}
+                                <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="block-algorithms">
+                    {% for algorithm in project.eval_model.partitioning_algorithms %}
+                    <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                        {% for param in algorithm['params'] %}
+                            {{ render_param(param, false, project) }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="header-metrics">METRICS</div>
+            <div class="div-content-metrics" id="metrics">
+                <div class="block-metrics">
+                    {% for algorithm in project.eval_model.metrics %}
+                    <div class="block-metric" name="metrics-{{ algorithm['name'] }}">
+                        <div class="metric-label">
+                            {% if algorithm["params"]|length > 0 %}
+                                <button class="close-metric">–</button>
+                            {% endif %}
+                            <input type="checkbox"> <label> {{ algorithm['name'] }} </label>
+                        </div>
+                        <div class="wrapper-parameters">
+                            {% for param in algorithm['params'] %}
+                                {{ render_param(param, false, project) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="header-algorithms">METHODOLOGY ALGORITHMS</div>
+            <div class="div-content-algorithms" id="methodology">
+                <div class="block-algorithms-selection">
+                    <label>Algorithm</label>
+                    <select class="select-algorithm" name="algtype">
+                        {% for algorithm in project.eval_model.methodology_algorithms %}
+                            {% if algorithm["name"] == project.eval_model.selected_methodology %}
+                                <option value="{{ algorithm['name'] }}" selected>{{ algorithm['name'] }}</option>
+                            {% else %}
+                                <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="block-algorithms">
+                    {% for algorithm in project.eval_model.methodology_algorithms %}
+                    <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                        {% for param in algorithm['params'] %}
+                            {{ render_param(param, false, project) }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div id="wrapper-continue">
+                <button type="submit" id="save-form">
+                    <span>Save algorithm</span>
+                </button>
+                <button type="submit" id="continue-button">
+                    <span>Save and continue to next section</span>
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

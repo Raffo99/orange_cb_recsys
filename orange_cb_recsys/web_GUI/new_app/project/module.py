@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from pathlib import Path
+
+import pandas as pd
 
 
 class PossiblePageStatus(Enum):
@@ -16,12 +19,14 @@ class AnalyzerType(Enum):
 
 class Module(ABC):
 
-    _pages_status = {}
-    _algorithms = {}
-
     def __init__(self):
+        self._algorithms = {}
+        self._pages_status = {}
         self._output_directory = ""
         pass
+
+    def check_output_directory(self):
+        Path(self._output_directory).mkdir(parents=True, exist_ok=True)
 
     @property
     def output_directory(self):
@@ -60,6 +65,10 @@ class Module(ABC):
 
     @abstractmethod
     def is_complete(self):
+        pass
+
+    @abstractmethod
+    def _convert_class(self, class_to_convert):
         pass
 
 
@@ -104,8 +113,7 @@ class ContentAnalyzerModule(Module):
         self._analyzer_type = new_type
 
     def is_complete(self):
-        return self._pages_status["Algorithms"] == PossiblePageStatus.COMPLETE or \
-                self._pages_status["Exogenous"] == PossiblePageStatus.COMPLETE
+        return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
 
     def has_already_dataset(self):
         return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
@@ -159,6 +167,34 @@ class ContentAnalyzerModule(Module):
 
     def produce_config_file(self):
         return ""
+
+    def _convert_class(self, class_to_convert):
+        class_obj = {}
+        if "type" not in class_to_convert:
+            return class_to_convert["name"]
+
+        if class_to_convert["type"] == "Union":
+            parameter_value = list(filter(lambda par: par["name"] == class_to_convert["value"],
+                                          class_to_convert["params"]))[0]
+            class_obj = self._convert_class(parameter_value)
+        elif class_to_convert["type"] == "Complex":
+            if "sub_classes" in class_to_convert:
+                parameter_value = list(filter(lambda sub_class: sub_class["name"] == class_to_convert["value"],
+                                              class_to_convert["sub_classes"]))[0]
+                class_obj = self._convert_class(parameter_value)
+            elif "params" in class_to_convert:
+                class_obj = {"class": class_to_convert["name"]}
+                for parameter in class_to_convert["params"]:
+                    if parameter["type"] == "kwargs":
+                        for custom_param_name, custom_param_value in parameter["params"].items():
+                            class_obj[custom_param_name] = custom_param_value
+                    else:
+                        class_obj[parameter["name"]] = self._convert_class(parameter)
+        else:
+            return class_to_convert["value"]
+
+        return class_obj
+
 
 
 class UsersContentAnalyzerModule(ContentAnalyzerModule):
@@ -257,37 +293,10 @@ class UsersContentAnalyzerModule(ContentAnalyzerModule):
 
         return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
 
-    def __convert_class(self, class_to_convert):
-        class_obj = {}
-        if "type" not in class_to_convert:
-            return class_to_convert["name"]
-
-        if class_to_convert["type"] == "Union":
-            parameter_value = list(filter(lambda par: par["name"] == class_to_convert["value"],
-                                          class_to_convert["params"]))[0]
-            class_obj = self.__convert_class(parameter_value)
-        elif class_to_convert["type"] == "Complex":
-            if "sub_classes" in class_to_convert:
-                parameter_value = list(filter(lambda sub_class: sub_class["name"] == class_to_convert["value"],
-                                              class_to_convert["sub_classes"]))[0]
-                class_obj = self.__convert_class(parameter_value)
-            elif "params" in class_to_convert:
-                class_obj = {"class": class_to_convert["name"]}
-                for parameter in class_to_convert["params"]:
-                    if parameter["type"] == "kwargs":
-                        for custom_param_name, custom_param_value in parameter["params"].items():
-                            class_obj[custom_param_name] = custom_param_value
-                    else:
-                        class_obj[parameter["name"]] = self.__convert_class(parameter)
-        else:
-            return class_to_convert["value"]
-
-        return class_obj
-
     def __convert_algorithm(self, algorithm):
         algorithm_obj = {"class": algorithm["name"]}
         for parameter in algorithm["params"]:
-            algorithm_obj[parameter["name"]] = self.__convert_class(parameter)
+            algorithm_obj[parameter["name"]] = self._convert_class(parameter)
         return algorithm_obj
 
     def __convert_preprocess(self, preprocess_techniques):
@@ -296,7 +305,7 @@ class UsersContentAnalyzerModule(ContentAnalyzerModule):
             if preprocess_technique["use"]:
                 technique = {"class": preprocess_technique["name"]}
                 for parameter in preprocess_technique["params"]:
-                    technique[parameter["name"]] = self.__convert_class(parameter)
+                    technique[parameter["name"]] = self._convert_class(parameter)
                 preprocess_list.append(technique)
         return preprocess_list
 
@@ -306,7 +315,7 @@ class UsersContentAnalyzerModule(ContentAnalyzerModule):
         if memory_interfaces["use"]:
             interface = [temp for temp in memory_interfaces["algorithms"] if temp["name"] == memory_interfaces["value"]][0]
             for parameter in interface["params"]:
-                memory_interface[parameter["name"]] = self.__convert_class(parameter)
+                memory_interface[parameter["name"]] = self._convert_class(parameter)
             memory_interface["class"] = interface["name"]
         else:
             return None
@@ -452,7 +461,7 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
         class_to_convert = exogenous["content"][0]
         to_return = {'class': 'ExogenousConfig'}
         for parameter in class_to_convert["params"]:
-            to_add = self.__convert_class(parameter)
+            to_add = self._convert_class(parameter)
             if "class" in to_add and to_add["class"] == "PropertiesFromDataset":
                 to_add["field_name_list"] = [field["name"] for field in exogenous["fields_list"]]
             to_return[parameter["name"]] = to_add
@@ -461,37 +470,10 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
     def __convert_exogenous_properties(self):
         return [self.__convert_exogenous_property(exogenous) for exogenous in self.exogenous_techniques]
 
-    def __convert_class(self, class_to_convert):
-        class_obj = {}
-        if "type" not in class_to_convert:
-            return class_to_convert["name"]
-
-        if class_to_convert["type"] == "Union":
-            parameter_value = list(filter(lambda par: par["name"] == class_to_convert["value"],
-                                          class_to_convert["params"]))[0]
-            class_obj = self.__convert_class(parameter_value)
-        elif class_to_convert["type"] == "Complex":
-            if "sub_classes" in class_to_convert:
-                parameter_value = list(filter(lambda sub_class: sub_class["name"] == class_to_convert["value"],
-                                              class_to_convert["sub_classes"]))[0]
-                class_obj = self.__convert_class(parameter_value)
-            elif "params" in class_to_convert:
-                class_obj = {"class": class_to_convert["name"]}
-                for parameter in class_to_convert["params"]:
-                    if parameter["type"] == "kwargs":
-                        for custom_param_name, custom_param_value in parameter["params"].items():
-                            class_obj[custom_param_name] = custom_param_value
-                    else:
-                        class_obj[parameter["name"]] = self.__convert_class(parameter)
-        else:
-            return class_to_convert["value"]
-
-        return class_obj
-
     def __convert_algorithm(self, algorithm):
         algorithm_obj = {"class": algorithm["name"]}
         for parameter in algorithm["params"]:
-            algorithm_obj[parameter["name"]] = self.__convert_class(parameter)
+            algorithm_obj[parameter["name"]] = self._convert_class(parameter)
         return algorithm_obj
 
     def __convert_preprocess(self, preprocess_techniques):
@@ -500,7 +482,7 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
             if preprocess_technique["use"]:
                 technique = {"class": preprocess_technique["name"]}
                 for parameter in preprocess_technique["params"]:
-                    technique[parameter["name"]] = self.__convert_class(parameter)
+                    technique[parameter["name"]] = self._convert_class(parameter)
                 preprocess_list.append(technique)
         return preprocess_list
 
@@ -510,7 +492,7 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
         if memory_interfaces["use"]:
             interface = [temp for temp in memory_interfaces["algorithms"] if temp["name"] == memory_interfaces["value"]][0]
             for parameter in interface["params"]:
-                memory_interface[parameter["name"]] = self.__convert_class(parameter)
+                memory_interface[parameter["name"]] = self._convert_class(parameter)
             memory_interface["class"] = interface["name"]
         else:
             return None
@@ -553,12 +535,76 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
         return obj_return
 
 
+class RatingsContentAnalyzerModule(ContentAnalyzerModule):
+    def __init__(self, ca_algorithms, dbpedia_classes):
+        super().__init__(dbpedia_classes)
+        self.ratings_algorithms = ca_algorithms["ratings"]
+        self.__analyzer_type = AnalyzerType.RATINGS
+        self.__ratings_properties = {
+            "from_id": 0,
+            "to_id": 1,
+            "score": 2,
+            "timestamp": 3
+        }
+
+    @property
+    def ratings_properties(self):
+        return self.__ratings_properties
+
+    @property
+    def from_id_column(self):
+        return self.__ratings_properties["from_id"]
+
+    @from_id_column.setter
+    def from_id_column(self, new_id):
+        self.__ratings_properties["from_id"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def to_id_column(self):
+        return self.__ratings_properties["to_id"]
+
+    @to_id_column.setter
+    def to_id_column(self, new_id):
+        self.__ratings_properties["to_id"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def score_column(self):
+        return self.__ratings_properties["score"]
+
+    @score_column.setter
+    def score_column(self, new_id):
+        self.__ratings_properties["score"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def timestamp_column(self):
+        return self.__ratings_properties["timestamp"]
+
+    @timestamp_column.setter
+    def timestamp_column(self, new_id):
+        self.__ratings_properties["timestamp"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def ratings_algorithms(self):
+        return self._algorithms["ratings"]
+
+    @ratings_algorithms.setter
+    def ratings_algorithms(self, new_ratings):
+        self._algorithms["ratings"] = new_ratings
+
+    def produce_config_file(self):
+        return ""
+
+
 class RecommenderSystemModule(Module):
 
     def __init__(self, recsys_algorithms):
         super().__init__()
         self.__fields_dict = {}
-        self.algorithms = recsys_algorithms
+        self._algorithms = recsys_algorithms
         self.__selected_algorithm = ""
         self.__path_from_ca = {
             "Items": False,
@@ -567,7 +613,13 @@ class RecommenderSystemModule(Module):
         }
         self.__items_path = ""
         self.__users_path = ""
-        self.__rating_path = ""
+        self.__ratings_path = ""
+        self.__ratings_properties = {
+            "from_id": 0,
+            "to_id": 1,
+            "score": 2,
+            "timestamp": 3
+        }
         self.__content = {
             "Fields": {
                 "Items": {},
@@ -581,6 +633,76 @@ class RecommenderSystemModule(Module):
             }
         }
         self.__init_pages_status()
+
+    @property
+    def algorithms(self):
+        return self._algorithms
+
+    @algorithms.setter
+    def algorithms(self, new_algorithms):
+        self._algorithms = new_algorithms
+
+    @property
+    def from_id_column(self):
+        return self.__ratings_properties["from_id"]
+
+    @from_id_column.setter
+    def from_id_column(self, new_id):
+        self.__ratings_properties["from_id"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def to_id_column(self):
+        return self.__ratings_properties["to_id"]
+
+    @to_id_column.setter
+    def to_id_column(self, new_id):
+        self.__ratings_properties["to_id"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def score_column(self):
+        return self.__ratings_properties["score"]
+
+    @score_column.setter
+    def score_column(self, new_id):
+        self.__ratings_properties["score"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    @property
+    def timestamp_column(self):
+        return self.__ratings_properties["timestamp"]
+
+    @timestamp_column.setter
+    def timestamp_column(self, new_id):
+        self.__ratings_properties["timestamp"] = \
+            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+
+    def get_items_list(self):
+        items_set = None
+        if self.__ratings_path != "":
+            items_set = set()
+            if self.__ratings_path.endswith(".csv"):
+                data = pd.read_csv(self.__ratings_path)
+            elif self.__ratings_path.endswith(".json"):
+                data = pd.read_json(self.__ratings_path)
+            else:
+                return items_set
+            items_set = set(data.iloc[:, self.to_id_column].unique())
+        return items_set
+
+    def get_users_list(self):
+        users_set = None
+        if self.__ratings_path != "":
+            users_set = set()
+            if self.__ratings_path.endswith(".csv"):
+                data = pd.read_csv(self.__ratings_path)
+            elif self.__ratings_path.endswith(".json"):
+                data = pd.read_json(self.__ratings_path)
+            else:
+                return users_set
+            users_set = set(data.iloc[:, self.from_id_column].unique())
+        return users_set
 
     @property
     def exogenous_techniques(self):
@@ -666,7 +788,7 @@ class RecommenderSystemModule(Module):
 
     @ratings_path.setter
     def ratings_path(self, new_ratings_path):
-        self.__rating_path = new_ratings_path
+        self.__ratings_path = new_ratings_path
 
     @property
     def field_dict(self):
@@ -690,7 +812,19 @@ class RecommenderSystemModule(Module):
         return self._pages_status["Representations"] == PossiblePageStatus.COMPLETE
 
     def produce_config_file(self):
-        return ""
+        alg_to_convert = next(filter(lambda x: x['name'] == self.__selected_algorithm, self._algorithms), None)
+
+        params_converted = {}
+        for param in alg_to_convert["params"]:
+            params_converted[param["name"]] = self._convert_class(param)
+
+        config_file = {
+            "class": alg_to_convert["name"]
+        }
+
+        config_file.update(params_converted)
+
+        return config_file
 
     @property
     def content(self):
@@ -706,67 +840,157 @@ class RecommenderSystemModule(Module):
         else:
             self.__fields_dict[field_name] = [id_representation]
 
+    def _convert_class(self, class_to_convert):
+        class_obj = {}
 
-class RatingsContentAnalyzerModule(ContentAnalyzerModule):
-    def __init__(self, ca_algorithms, dbpedia_classes):
-        super().__init__(dbpedia_classes)
-        self.ratings_algorithms = ca_algorithms["ratings"]
-        self.__analyzer_type = AnalyzerType.RATINGS
-        self.__ratings_properties = {
-            "from_id": 0,
-            "to_id": 1,
-            "score": 2,
-            "timestamp": 3
+        if class_to_convert["name"] in ["users_contents_dir", "item_contents_dir", "items_directory", "users_directory"]:
+            return self.items_path if "item" in class_to_convert["name"] else self.users_path
+
+        if class_to_convert["name"] == "source_frame" or class_to_convert["name"] == "rating_frame":
+            return self.ratings_path
+
+        if "type" not in class_to_convert:
+            return class_to_convert["name"]
+
+        if class_to_convert["type"] == "Union":
+            parameter_value = list(filter(lambda par: par["name"] == class_to_convert["value"],
+                                          class_to_convert["params"]))[0]
+            class_obj = self._convert_class(parameter_value)
+        elif class_to_convert["type"] == "Complex":
+            if "sub_classes" in class_to_convert:
+                parameter_value = list(filter(lambda sub_class: sub_class["name"] == class_to_convert["value"],
+                                              class_to_convert["sub_classes"]))[0]
+                class_obj = self._convert_class(parameter_value)
+            elif "params" in class_to_convert:
+                class_obj = {"class": class_to_convert["name"]}
+                for parameter in class_to_convert["params"]:
+                    if parameter["name"] == "item_field":
+                        class_obj["item_field"] = {
+                            field["name"]: [
+                                rep["name"] for rep in field["representations"] if rep["use"]
+                            ] for field in [field for field in self.field_dict if field["use"]]
+                        }
+                    elif parameter["type"] == "kwargs":
+                        for custom_param_name, custom_param_value in parameter["params"].items():
+                            class_obj[custom_param_name] = custom_param_value
+                    else:
+                        value = self._convert_class(parameter)
+                        if (value != "") or ("value" not in parameter):
+                            class_obj[parameter["name"]] = value
+        elif class_to_convert["type"] == "exogenous_props":
+            return class_to_convert["list"]
+        else:
+            return class_to_convert["value"]
+
+        return class_obj
+
+
+class EvalModule(Module):
+
+    def __init__(self, eval_algorithms):
+        super().__init__()
+        self.__init_pages_status()
+        self.partitioning_algorithms = eval_algorithms["partitioning"]
+        self.metrics = eval_algorithms["metrics"]
+        self.methodology_algorithms = eval_algorithms["methodology"]
+        self.__recsys_from_project = False
+        self.__recsys_config = {}
+        self.__selected_algorithms = {
+            "partitioning": "",
+            "metric": "",
+            "methodology": ""
         }
 
     @property
-    def ratings_properties(self):
-        return self.__ratings_properties
+    def algorithms(self):
+        return self._algorithms
+
+    @algorithms.setter
+    def algorithms(self, new_algorithms):
+        self._algorithms = new_algorithms
 
     @property
-    def from_id_column(self):
-        return self.__ratings_properties["from_id"]
+    def selected_algorithms(self):
+        return self.__selected_algorithms
 
-    @from_id_column.setter
-    def from_id_column(self, new_id):
-        self.__ratings_properties["from_id"] = \
-            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
-
-    @property
-    def to_id_column(self):
-        return self.__ratings_properties["to_id"]
-
-    @to_id_column.setter
-    def to_id_column(self, new_id):
-        self.__ratings_properties["to_id"] = \
-            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+    @selected_algorithms.setter
+    def selected_algorithms(self, new_selected):
+        self.__selected_algorithms = new_selected
 
     @property
-    def score_column(self):
-        return self.__ratings_properties["score"]
+    def selected_partitioning(self):
+        return self.__selected_algorithms["partitioning"]
 
-    @score_column.setter
-    def score_column(self, new_id):
-        self.__ratings_properties["score"] = \
-            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
-
-    @property
-    def timestamp_column(self):
-        return self.__ratings_properties["timestamp"]
-
-    @timestamp_column.setter
-    def timestamp_column(self, new_id):
-        self.__ratings_properties["timestamp"] = \
-            new_id if type(new_id).__name__ == "int" else self.from_string_to_index(new_id)
+    @selected_partitioning.setter
+    def selected_partitioning(self, new_algorithm):
+        self.__selected_algorithms["partitioning"] = new_algorithm
 
     @property
-    def ratings_algorithms(self):
-        return self._algorithms["ratings"]
+    def selected_metric(self):
+        return self.__selected_algorithms["metric"]
 
-    @ratings_algorithms.setter
-    def ratings_algorithms(self, new_ratings):
-        self._algorithms["ratings"] = new_ratings
+    @selected_metric.setter
+    def selected_metric(self, new_algorithm):
+        self.__selected_algorithms["metric"] = new_algorithm
+
+    @property
+    def selected_methodology(self):
+        return self.__selected_algorithms["methodology"]
+
+    @selected_methodology.setter
+    def selected_methodology(self, new_algorithm):
+        self.__selected_algorithms["methodology"] = new_algorithm
+
+    def is_recsys_from_project(self):
+        return self.__recsys_from_project
+
+    @property
+    def recsys_config(self):
+        return self.__recsys_config
+
+    @recsys_config.setter
+    def recsys_config(self, new_recsys_config=None):
+        if new_recsys_config is None:
+            self.__recsys_from_project = True
+        else:
+            self.__recsys_from_project = False
+        self.__recsys_config = new_recsys_config
+
+    @property
+    def partitioning_algorithms(self):
+        return self._algorithms["partitioning"]
+
+    @partitioning_algorithms.setter
+    def partitioning_algorithms(self, new_algorithms):
+        self._algorithms["partitioning"] = new_algorithms
+
+    @property
+    def metrics(self):
+        return self._algorithms["metrics"]
+
+    @metrics.setter
+    def metrics(self, new_algorithms):
+        self._algorithms["metrics"] = new_algorithms
+
+    @property
+    def methodology_algorithms(self):
+        return self._algorithms["methodology"]
+
+    @methodology_algorithms.setter
+    def methodology_algorithms(self, new_algorithms):
+        self._algorithms["methodology"] = new_algorithms
 
     def produce_config_file(self):
-        return ""
+        pass
 
+    def is_complete(self):
+        pass
+
+    def _convert_class(self, class_to_convert):
+        pass
+
+    def __init_pages_status(self):
+        self._pages_status = {
+            "Upload": PossiblePageStatus.DISABLED,
+            "Settings": PossiblePageStatus.INCOMPLETE,
+        }

@@ -76,7 +76,32 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="module-status" id="eval" >
+        {% if current_module == "EvalModel" or project.eval_model.is_complete() %}
+            <div class="module-status" id="evalmodel" style="background-color: #4285F4;">
+        {% else %}
+            <div class="module-status" id="evalmodel">
+        {% endif %}
+            <label>Eval Model</label>
+            <div class="pages">
+                {% for name_page, status in project.eval_model.pages_status.items() %}
+                    {% if status.name != "DISABLED" %}
+                        <a href="../evalmodel/{{ name_page|lower }}">
+                    {% endif %}
+                    <div class="page">
+                        <label>{{ name_page|upper }}</label>
+                        <div class="page-status">
+                            {% if current_page == name_page and current_module == "EvalModel" %}
+                                <div class="status current"></div>
+                            {% else %}
+                                <div class="status {{ status.name|lower }}"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if status.name != "DISABLED" %}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
         <div id="save-button">
             <img src="{{ url_for('static', filename='icons/save-icon.svg') }}">

@@ -1,0 +1,27 @@
+{% extends "base-settings-module.html" %}
+{% from "helpers/_parmshelper.html" import render_param %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
+{% block title %}
+    Recommender System
+{% endblock %}
+
+{% block header_import %}
+    <title>EvalModel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/eval-upload.css') }}">
+    <script type=module src="{{ url_for('static', filename='javascript/eval-upload-script.js') }}"></script>
+{% endblock %}
+
+{% block header %}
+    <h1>EVAL MODEL</h1>
+    <hr>
+{% endblock %}
+
+{% block sub_header %} <h4>Setting Metrics</h4> {% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Metrics", "EvalModel") }}
+{% endblock %}
+
+{% block form_content %}
+{% endblock %}

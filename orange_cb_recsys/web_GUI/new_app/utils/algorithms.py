@@ -7,6 +7,9 @@ from orange_cb_recsys.content_analyzer.memory_interfaces.memory_interfaces impor
 from orange_cb_recsys.content_analyzer.config import ExogenousConfig
 from orange_cb_recsys.content_analyzer.ratings_manager.rating_processor import RatingProcessor
 from orange_cb_recsys.recsys.recsys import RecSys
+from orange_cb_recsys.evaluation.partitioning_techniques.partitioning import Partitioning
+from orange_cb_recsys.evaluation.metrics.metrics import Metric
+from orange_cb_recsys.evaluation.eval_pipeline_modules.methodology import Methodology
 from inspect import signature
 from abc import ABC
 
@@ -24,11 +27,27 @@ def remove_names(obj, rubbish):
     return obj
 
 
+def get_eval_algorithms():
+    partitioning_algorithms = []
+    metrics_algorithms = []
+    methodology_algorithms = []
+
+    partitioning_classes = r_i.get_all_implemented_classes(Partitioning)
+    metrics_classes = r_i.get_all_implemented_classes(Metric)
+    methodology_classes = r_i.get_all_implemented_classes(Methodology)
+
+    add_algorithms(partitioning_algorithms, partitioning_classes)
+    add_algorithms(metrics_algorithms, metrics_classes)
+    add_algorithms(methodology_algorithms, methodology_classes)
+
+    return {"partitioning": partitioning_algorithms,
+            "metrics": metrics_algorithms,
+            "methodology": methodology_algorithms}
+
+
 def get_recsys_algorithms():
     rec_sys = []
     add_algorithms(rec_sys, r_i.get_all_implemented_classes(RecSys))
-
-    rec_sys = remove_names(rec_sys, ['user_contents_dir', 'item_contents_dir', 'items_directory', 'users_directory'])
 
     return rec_sys
 
@@ -106,7 +125,7 @@ def add_algorithms(algorithms_list, classes_list):
 
             # Iterate over every parameter in the signature of the class, and use the recursive method on it
             for parm in signature_parameters:
-                class_to_append = get_class_with_parameters(parm[1].annotation, parm[0], 0)
+                class_to_append = get_class_with_parameters(parm[1].annotation, parm[0], parm[1].default)
                 if 'name' in class_to_append:
                     parm_list.append(class_to_append)
 
@@ -144,6 +163,9 @@ def get_class_with_parameters(_class, _class_name, default_value=None):
     """
 
     simple_classes = ['str', 'float', 'int', 'bool']
+
+    if _class_name == "":
+        return "test"
 
     # If the class is a list, the method has to specify it
     if hasattr(_class, "__origin__") and _class.__origin__ is list:
@@ -212,9 +234,9 @@ def get_class_with_parameters(_class, _class_name, default_value=None):
                     # for every parameter in the signature of the class
                     if _class.__name__ == "dict":
                         # TODO: Support dictionary
-                        return_class = {'name': 'dict'}
+                        return_class = {"name": _class_name, "type": "dict"}
                     else:
-                        if _class_name == "lang" or _class is type(None) or _class is type:
+                        if _class_name == "lang" or _class is type(None) or _class is type or _class_name == "args":
                             return {}
 
                         if _class_name == "kwargs":
@@ -226,6 +248,9 @@ def get_class_with_parameters(_class, _class_name, default_value=None):
                         class_parameters = []
 
                         for class_param in list(signature(_class).parameters.items()):
+                            print(class_param[1].default)
+                            print(class_param)
+                            print(class_param[1])
                             class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0],
                                                                         class_param[1].default)
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:
@@ -239,7 +264,7 @@ def get_class_with_parameters(_class, _class_name, default_value=None):
                         }
         except AttributeError:
             # TODO: Support more classes
-            print("Attribute error " + _class_name)
+            print("Attribute error " + type(_class).__name__ + " (" + _class_name + ") ")
             return_class = {}
 
     return return_class
