@@ -1,7 +1,7 @@
 from unittest import TestCase
 import pandas as pd
 
-from orange_cb_recsys.recsys.graphs.graph import ItemNode, UserNode
+from orange_cb_recsys.recsys.graphs.graph import ItemNode, UserNode, PropertyNode
 from orange_cb_recsys.recsys.graphs.nx_full_graphs import NXFullGraph
 
 from orange_cb_recsys.recsys.graph_based_algorithm.page_rank.nx_page_rank import NXPageRank
@@ -30,7 +30,8 @@ class TestGraphBasedAlgorithm(TestCase):
         self.alg = NXPageRank()
 
     def test_clean_rank(self):
-        rank = {"A000": 0.5, "tt0114576": 0.5, "A001": 0.5, "tt0113497": 0.5, "tt0112453": 0.5, "Nolan": 0.5}
+        rank = {UserNode("A000"): 0.5, ItemNode("tt0114576"): 0.5, UserNode("A001"): 0.5, ItemNode("tt0113497"): 0.5,
+                ItemNode("tt0112453"): 0.5, PropertyNode("Nolan"): 0.5}
 
         # remove from rank all nodes except Item nodes
         result = self.alg.clean_result(self.graph, rank, user_id="A000")
@@ -50,6 +51,23 @@ class TestGraphBasedAlgorithm(TestCase):
         # remove from rank all nodes except Item nodes and property nodes
         result = self.alg.clean_result(self.graph, rank, user_id="A000", remove_properties=False)
         expected = {'tt0113497': 0.5, 'Nolan': 0.5}
+        self.assertEqual(expected, result)
+
+    def test_filter_result(self):
+        result_page_rank = {ItemNode("i1"): 0.8, ItemNode("i2"): 0.7,
+                            UserNode('u1'): 0.2, PropertyNode("p1"): 0.1}
+
+        result = self.alg.filter_result(result_page_rank, ['i1'])
+        expected = {ItemNode("i1"): 0.8}
+        self.assertEqual(expected, result)
+
+        result = self.alg.filter_result(result_page_rank, ['u1', 'p1'])
+        expected = {UserNode('u1'): 0.2, PropertyNode("p1"): 0.1}
+        self.assertEqual(expected, result)
+
+        # filter with non existent nodes, result will be empty
+        result = self.alg.filter_result(result_page_rank, ['not exists', 'i20'])
+        expected = {}
         self.assertEqual(expected, result)
 
     def test_extract_profile(self):
