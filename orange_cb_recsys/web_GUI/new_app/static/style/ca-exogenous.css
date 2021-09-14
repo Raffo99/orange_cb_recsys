@@ -135,10 +135,16 @@ ul[id*='ui-id-'] {
     margin: 10px;
     padding: 10px;
     width: calc(100% - 20px);
-    background-color: #f1f1f1!important;
+    background-color: #f1f1f1;
     border: 2px solid black;
     border-radius: 5px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+.button-new-technique:hover {
+    font-weight: bold;
+    background-color: #b3b3b3;
 }
 
 .active-technique {

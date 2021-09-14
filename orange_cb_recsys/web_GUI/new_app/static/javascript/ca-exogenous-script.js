@@ -192,6 +192,14 @@ $(".button-new-technique").click(function () {
 });
 
 $(document).ready(function() {
+    $("#continue-button").click(function () {
+        saveTechnique();
+        let location = "/recsys/upload"
+        if ($_GET["type"] == "Items") location = "/content-analyzer/upload?type=Users";
+        else if ($_GET["type"] == "Users") location = "/content-analyzer/upload?type=Ratings";
+        window.location.replace(location);
+    });
+
     $("#list-techniques").on("click", ".technique label", function () {
         if ($(".active-technique")[0]) {
             saveTechnique();
