@@ -3,6 +3,20 @@ from enum import Enum
 from pathlib import Path
 
 import pandas as pd
+import re
+
+
+def check_value(value):
+    if type(value).__name__ != "str":
+        return value
+
+    if value == "":
+        return None
+    if re.match("\\d+\\.\\d+", value):
+        return float(value)
+    elif re.match("\\d+", value):
+        return int(value)
+    return value
 
 
 class PossiblePageStatus(Enum):
@@ -113,7 +127,7 @@ class ContentAnalyzerModule(Module):
         self._analyzer_type = new_type
 
     def is_complete(self):
-        return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
+        return self._pages_status["Fields"] == PossiblePageStatus.COMPLETE
 
     def has_already_dataset(self):
         return self._pages_status["Upload"] == PossiblePageStatus.COMPLETE
@@ -191,10 +205,9 @@ class ContentAnalyzerModule(Module):
                     else:
                         class_obj[parameter["name"]] = self._convert_class(parameter)
         else:
-            return class_to_convert["value"]
+            return check_value(class_to_convert["value"])
 
         return class_obj
-
 
 
 class UsersContentAnalyzerModule(ContentAnalyzerModule):
@@ -287,11 +300,24 @@ class UsersContentAnalyzerModule(ContentAnalyzerModule):
             "id": self.id_fields_name,
             "output_directory": self.output_directory,
             "field_dict": self.__convert_fields(),
-            "exogenous_representation_list": None,
+            "exogenous_representation_list": self.__convert_exogenous_properties(),
             "export_json": False
         }
 
-        return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
+        return config_file_obj
+
+    def __convert_exogenous_property(self, exogenous):
+        class_to_convert = exogenous["content"][0]
+        to_return = {'class': 'ExogenousConfig'}
+        for parameter in class_to_convert["params"]:
+            to_add = self._convert_class(parameter)
+            if "class" in to_add and to_add["class"] == "PropertiesFromDataset":
+                to_add["field_name_list"] = [field["name"] for field in exogenous["fields_list"] if field["value"]]
+            to_return[parameter["name"]] = to_add
+        return to_return
+
+    def __convert_exogenous_properties(self):
+        return [self.__convert_exogenous_property(exogenous) for exogenous in self.exogenous_techniques]
 
     def __convert_algorithm(self, algorithm):
         algorithm_obj = {"class": algorithm["name"]}
@@ -367,7 +393,6 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
         self.__fields_selected = {}
         self.__id_fields_name = []
         self._analyzer_type = AnalyzerType.USERS
-        self.__fields_selected = {}
         self.__id_fields_name = []
         self.content_production_algorithms = ca_algorithms["content_production"]
         self.preprocess_algorithms = ca_algorithms["preprocessing"]
@@ -455,7 +480,7 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
             "export_json": False
         }
 
-        return [{"module": "contentanalyzer", "config": config_file_obj, "fit": {}}]
+        return config_file_obj
 
     def __convert_exogenous_property(self, exogenous):
         class_to_convert = exogenous["content"][0]
@@ -463,7 +488,7 @@ class ItemsContentAnalyzerModule(ContentAnalyzerModule):
         for parameter in class_to_convert["params"]:
             to_add = self._convert_class(parameter)
             if "class" in to_add and to_add["class"] == "PropertiesFromDataset":
-                to_add["field_name_list"] = [field["name"] for field in exogenous["fields_list"]]
+                to_add["field_name_list"] = [field["name"] for field in exogenous["fields_list"] if field["value"]]
             to_return[parameter["name"]] = to_add
         return to_return
 
@@ -539,6 +564,7 @@ class RatingsContentAnalyzerModule(ContentAnalyzerModule):
     def __init__(self, ca_algorithms, dbpedia_classes):
         super().__init__(dbpedia_classes)
         self.ratings_algorithms = ca_algorithms["ratings"]
+        self.__selected_algorithm = ""
         self.__analyzer_type = AnalyzerType.RATINGS
         self.__ratings_properties = {
             "from_id": 0,
@@ -546,6 +572,14 @@ class RatingsContentAnalyzerModule(ContentAnalyzerModule):
             "score": 2,
             "timestamp": 3
         }
+
+    @property
+    def selected_algorithm(self):
+        return self.__selected_algorithm
+
+    @selected_algorithm.setter
+    def selected_algorithm(self, new_algorithm):
+        self.__selected_algorithm = new_algorithm
 
     @property
     def ratings_properties(self):
@@ -633,6 +667,25 @@ class RecommenderSystemModule(Module):
             }
         }
         self.__init_pages_status()
+
+    def produce_script_ratings_importer(self):
+        return [{
+            "module": "RatingsImporter",
+            "source": {
+                "class": self.ratings_path[self.ratings_path.rindex(".") + 1:].upper() + "File",
+                "file_path": self.ratings_path
+            },
+            "from_id_column": self.from_id_column,
+            "to_id_column": self.to_id_column,
+            "score_column": self.score_column,
+            "timestamp_column": self.timestamp_column,
+            "import_ratings": {},
+            "imported_ratings_to_csv": {
+                "output_directory": self.output_directory,
+                "file_name": "imported_ratings",
+                "overwrite": True
+            }
+        }]
 
     @property
     def algorithms(self):
@@ -751,6 +804,7 @@ class RecommenderSystemModule(Module):
     def __init_pages_status(self):
         self._pages_status = {
             "Upload": PossiblePageStatus.DISABLED,
+            "Settings": PossiblePageStatus.DISABLED,
             "Representations": PossiblePageStatus.DISABLED,
         }
 
@@ -880,7 +934,7 @@ class RecommenderSystemModule(Module):
         elif class_to_convert["type"] == "exogenous_props":
             return class_to_convert["list"]
         else:
-            return class_to_convert["value"]
+            return check_value(class_to_convert["value"])
 
         return class_obj
 
@@ -924,14 +978,6 @@ class EvalModule(Module):
     @selected_partitioning.setter
     def selected_partitioning(self, new_algorithm):
         self.__selected_algorithms["partitioning"] = new_algorithm
-
-    @property
-    def selected_metric(self):
-        return self.__selected_algorithms["metric"]
-
-    @selected_metric.setter
-    def selected_metric(self, new_algorithm):
-        self.__selected_algorithms["metric"] = new_algorithm
 
     @property
     def selected_methodology(self):
@@ -980,17 +1026,57 @@ class EvalModule(Module):
     def methodology_algorithms(self, new_algorithms):
         self._algorithms["methodology"] = new_algorithms
 
-    def produce_config_file(self):
-        pass
+    def produce_config_file(self, recsys_config=None):
+        recsys_config = self.recsys_config if recsys_config is None else recsys_config
+        config_script = {
+            "recsys": recsys_config,
+            "partitioning": self._convert_algorithm([x for x in self.partitioning_algorithms if x["name"] == self.selected_partitioning][0]),
+            "methodology": self._convert_algorithm([x for x in self.methodology_algorithms if x["name"] == self.selected_methodology][0]),
+            "metric_list": [self._convert_algorithm(metric) for metric in self.metrics if metric['use']],
+            "verbose_predictions": True
+        }
+
+        return config_script
+
+    def _convert_algorithm(self, algorithm):
+        dict_params = {param['name']: self._convert_class(param) for param in algorithm['params']}
+        return_obj = {'class': algorithm['name']}
+        return_obj.update(dict_params)
+
+        return return_obj
 
     def is_complete(self):
-        pass
+        return self.get_page_status("Metrics") == PossiblePageStatus.COMPLETE
 
     def _convert_class(self, class_to_convert):
-        pass
+        class_obj = {}
+        if "type" not in class_to_convert:
+            return class_to_convert["name"]
+
+        if class_to_convert["type"] == "Union":
+            parameter_value = list(filter(lambda par: par["name"] == class_to_convert["value"],
+                                          class_to_convert["params"]))[0]
+            class_obj = self._convert_class(parameter_value)
+        elif class_to_convert["type"] == "Complex":
+            if "sub_classes" in class_to_convert:
+                parameter_value = list(filter(lambda sub_class: sub_class["name"] == class_to_convert["value"],
+                                              class_to_convert["sub_classes"]))[0]
+                class_obj = self._convert_class(parameter_value)
+            elif "params" in class_to_convert:
+                class_obj = {"class": class_to_convert["name"]}
+                for parameter in class_to_convert["params"]:
+                    if parameter["type"] == "kwargs":
+                        for custom_param_name, custom_param_value in parameter["params"].items():
+                            class_obj[custom_param_name] = custom_param_value
+                    else:
+                        class_obj[parameter["name"]] = self._convert_class(parameter)
+        else:
+            return check_value(class_to_convert["value"])
+
+        return class_obj
 
     def __init_pages_status(self):
         self._pages_status = {
             "Upload": PossiblePageStatus.DISABLED,
-            "Settings": PossiblePageStatus.INCOMPLETE,
+            "Metrics": PossiblePageStatus.DISABLED,
         }
