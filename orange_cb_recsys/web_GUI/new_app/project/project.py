@@ -5,43 +5,47 @@ import sys
 from .module import ItemsContentAnalyzerModule, UsersContentAnalyzerModule, RatingsContentAnalyzerModule, \
     RecommenderSystemModule, PossiblePageStatus, EvalModule
 from threading import Thread
-from orange_cb_recsys.script_handling import script_run
-from orange_cb_recsys.utils.const import logger
+from orange_cb_recsys.script.script_handling import handle_script_contents
+from orange_cb_recsys.utils.const import logger, recsys_logger, eval_logger
+
+import traceback
+from importlib import reload
 
 
 def run_script(project, script):
-    # old_stderr = sys.stderr
-    # new_stderr = io.StringIO()
-    # sys.stderr = new_stderr
+    old_stderr = sys.stderr
+    new_stderr = io.StringIO()
+    sys.stderr = new_stderr
 
-    # log_capture_string = io.StringIO()
     try:
-        project.logger.close()
-    except:
-        print("No logger to close")
+        handle_script_contents(script)
+    except Exception as e:
+        traceback.print_exc()
+        log_com = project.logger_content.getvalue() + project.logger_recsys.getvalue() + project.logger_eval.getvalue()
+        project.full_log += log_com
+        project.full_log += "<br> Exception: " + str(e)
 
-    project.logger = io.StringIO()
-    ch = logging.StreamHandler(project.logger)
-    # ch = logging.StreamHandler(log_capture_string)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("<br> %(asctime)s - %(levelname)s - %(message)s")
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    # project.logger.close()
 
-    script_run(script)
+    sys.stderr = old_stderr
+    project.temp_log = "--- Script started ---" + project.logger_content.getvalue() + project.logger_eval.getvalue() \
+                              + project.logger_recsys.getvalue() + "<br>--- Script ended ---<br>"
+    project.full_log += project.temp_log
 
-    # log_com = log_capture_string.getvalue()
-
-    # print("err: " + new_stderr.getvalue())
-    # sys.stderr = old_stderr
+    project.init_loggers()
     project.running = False
 
 
 class Project(object):
     def __init__(self, ca_algorithms, recsys_algorithms, eval_algorithms, dbpedia_classes):
-        self.__logger = io.StringIO()
+        self.logger_content = io.StringIO()
+        self.logger_recsys = io.StringIO()
+        self.logger_eval = io.StringIO()
+        self.init_loggers()
+        self.full_log = ""
+        self.temp_log = ""
         self.__running = False
-        self.modules = {
+        self.__modules = {
             "ContentAnalyzer": {
                 "Items": ItemsContentAnalyzerModule(ca_algorithms, dbpedia_classes),
                 "Users": UsersContentAnalyzerModule(ca_algorithms, dbpedia_classes),
@@ -54,6 +58,35 @@ class Project(object):
         self.save_path = "./projects/"
 
     @property
+    def modules(self):
+        return self.__modules
+
+    def init_loggers(self):
+        self.temp_log = ""
+
+        self.logger_content = io.StringIO()
+        self.logger_recsys = io.StringIO()
+        self.logger_eval = io.StringIO()
+
+        ch_content = logging.StreamHandler(self.logger_content)
+        ch_recsys = logging.StreamHandler(self.logger_recsys)
+        ch_eval = logging.StreamHandler(self.logger_eval)
+
+        ch_content.setLevel(logging.DEBUG)
+        ch_recsys.setLevel(logging.DEBUG)
+        ch_eval.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter("<br> %(asctime)s - %(levelname)s - %(message)s")
+
+        ch_content.setFormatter(formatter)
+        ch_recsys.setFormatter(formatter)
+        ch_eval.setFormatter(formatter)
+
+        logger.addHandler(ch_content)
+        recsys_logger.addHandler(ch_recsys)
+        eval_logger.addHandler(ch_eval)
+
+    @property
     def running(self):
         return self.__running
 
@@ -61,27 +94,20 @@ class Project(object):
     def running(self, new_running):
         self.__running = new_running
 
-    @property
-    def logger(self):
-        return self.__logger
-
-    @logger.setter
-    def logger(self, new_log):
-        self.__logger = new_log
-
     def get_current_log(self):
-        try:
-            full_log = self.__logger.getvalue()
-            if not self.running and not self.logger.closed:
-                self.logger.close()
-            print(full_log)
-            return "Script started" + full_log
-        except:
-            return "CLOSED"
+        if self.running:
+            self.temp_log = "--- Script started ---" + self.logger_content.getvalue() + self.logger_eval.getvalue() \
+                              + self.logger_recsys.getvalue()
+
+            final_log = self.temp_log
+        else:
+            final_log = self.full_log
+        return final_log
 
     def run(self, script):
         if not self.running:
             self.running = True
+            self.temp_log = ""
             t = Thread(target=run_script, args=(self, script,))
             t.start()
             return True
@@ -122,5 +148,16 @@ class Project(object):
         if type_content in self.modules["ContentAnalyzer"].keys():
             return self.content_analyzer[type_content].is_complete()
         return False
+
+    def produce_config_file(self, module, content_type=None):
+        if module == "ContentAnalyzer":
+            config_file = self.modules[module][content_type].produce_config_file()
+        elif module == "RecSys":
+            config_file = self.modules[module].produce_config_file()
+        elif module == "EvalModel":
+            recsys_config = self.recommender_system.produce_config_file() \
+                if self.eval_model.is_recsys_from_project() else None
+            config_file = self.modules[module].produce_config_file(recsys_config)
+        return config_file
 
 
