@@ -88,14 +88,14 @@
                                 <div class="add-item">
                                     <button class="add-item-button">Add User</button>
                                 </div>
-                                <div class="list-possible-parameter" id="users-list"></div>
+                                <div class="list-possible-parameter" id="users-list-recsys"></div>
                             </div>
                             <div class="parameter-fit">
                                 <label> Items ID List </label>
                                 <div class="add-item">
                                     <button class="add-item-button">Add Item</button>
                                 </div>
-                                <div class="list-possible-parameter" id="items-list"></div>
+                                <div class="list-possible-parameter" id="items-list-recsys"></div>
                             </div>
                             <div class="parameter-fit">
                                 <label>Rank Number</label><input type="number" id="rank-number">
@@ -116,14 +116,14 @@
                         </div>
                     {% else %}
                         <div class="wrapper-buttons">
-                            <button class="config-button">
+                            <button class="config-button" disabled>
                                 <label>Export config file</label>
                             </button>
-                            <button class="fit-button-rank">
+                            <button class="fit-button-rank" disabled>
                                 <label>Fit Rank</label>
                                 <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
                             </button>
-                            <button class="fit-button-predict">
+                            <button class="fit-button-predict" disabled>
                                 <label>Fit Predict</label>
                                 <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
                             </button>
@@ -135,8 +135,42 @@
     <div class="row">
         <div class="col-2"></div>
         <div class="col-8">
-            <div class="module">
+            {% if project.eval_model.is_complete() %}
+                <div class="module">
+            {% else %}
+                <div class="module not-complete">
+            {% endif %}
                 <div class="header-module" name="EvalModel">Eval Model</div>
+                    {% if project.eval_model.is_complete() %}
+                        <div class="wrapper-fit-eval">
+                            <div class="parameter-fit">
+                                <label> Users ID List </label>
+                                <div class="add-item">
+                                    <button class="add-item-button">Add User</button>
+                                </div>
+                                <div class="list-possible-parameter" id="users-list-eval"></div>
+                            </div>
+                        </div>
+                        <div class="wrapper-buttons">
+                            <button class="config-button">
+                                <label>Export config file</label>
+                            </button>
+                            <button class="fit-button">
+                                <label>Fit</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="wrapper-buttons">
+                            <button class="config-button" disabled>
+                                <label>Export config file</label>
+                            </button>
+                            <button class="fit-button" disabled>
+                                <label>Fit</label>
+                                <img src="{{ url_for('static', filename='icons/play-arrow-icon.svg') }}">
+                            </button>
+                        </div>
+                    {% endif %}
             </div>
         </div>
     </div>

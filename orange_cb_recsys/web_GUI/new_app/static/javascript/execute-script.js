@@ -13,12 +13,12 @@ $(document).ready(function () {
 
     $(".fit-button-predict").click(function () {
         let itemsList = []
-        $("#items-list").children(".item-possible-parameter").each(function () {
+        $("#items-list-recsys").children(".item-possible-parameter").each(function () {
             itemsList.push($(this).children("input").val());
         });
 
         let usersList = []
-        $("#users-list").children(".item-possible-parameter").each(function () {
+        $("#users-list-recsys").children(".item-possible-parameter").each(function () {
             usersList.push($(this).children("input").val());
         })
 
@@ -35,37 +35,59 @@ $(document).ready(function () {
                 }
             }),
             success: function (data) {
-                window.location.replace("/logger?module=RecSys")
             },
             error: function (jqXhr, textStatus, errorMessage) {
                 console.log(errorMessage);
             }
         });
+
+        window.location.replace("/logger");
     });
 
     $(".fit-button").click(function () {
-       let nameModule = $(this).parent().parent().children(".header-module").attr('name');
+        let nameModule = $(this).parent().parent().children(".header-module").attr('name');
 
-       if (nameModule == "ContentAnalyzer") {
-           let logger = $("#logger");
-           let contentType = $("input[name='content-type-analyzer']:checked").val();
+        if (nameModule == "ContentAnalyzer") {
+            let contentType = $("input[name='content-type-analyzer']:checked").val();
 
-           $.ajax({
-               type: 'POST',
-               url: "/execute-modules",
-               contentType: 'application/json; charset=UTF-8',
-               data: JSON.stringify({
-                   "module": "ContentAnalyzer",
-                   "contentType": contentType
-               }),
-               success: function (data) {
-                    window.location.replace("/logger?module=ContentAnalyzer&contentType=" + contentType)
-               },
-               error: function (jqXhr, textStatus, errorMessage) {
+            $.ajax({
+                type: 'POST',
+                url: "/execute-modules",
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({
+                    "module": "ContentAnalyzer",
+                    "contentType": contentType
+                }),
+                error: function (jqXhr, textStatus, errorMessage) {
+                     console.log(errorMessage);
+                }
+            });
+        } else if (nameModule == "EvalModel") {
+            let usersList = []
+            $("#users-list-eval").children(".item-possible-parameter").each(function () {
+                usersList.push($(this).children("input").val());
+            });
+
+            let params = {}
+            if (usersList.length != 0)
+                params = {
+                    "user_id_list": usersList,
+                }
+
+            $.ajax({
+                type: 'POST',
+                url: "/execute-modules",
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({
+                    "module": "EvalModel",
+                    "params": params
+                }),
+                error: function (jqXhr, textStatus, errorMessage) {
                     console.log(errorMessage);
-               }
-           });
-       }
+                }
+            });
+        }
+       window.location.replace("/logger");
     });
 
     $(".config-button").click(function () {
