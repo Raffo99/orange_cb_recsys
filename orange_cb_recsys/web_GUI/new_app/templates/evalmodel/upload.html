@@ -3,7 +3,7 @@
 {% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
 
 {% block title %}
-    Recommender System
+    Eval Model
 {% endblock %}
 
 {% block header_import %}
@@ -17,11 +17,41 @@
     <hr>
 {% endblock %}
 
-{% block sub_header %} <h4>Setting Metrics</h4> {% endblock %}
+{% block sub_header %} <h4>Upload Eval Model</h4> {% endblock %}
 
 {% block nav_bar_left %}
-    {{ render_nav_bar_left(project, "Metrics", "EvalModel") }}
+    {{ render_nav_bar_left(project, "Upload", "EvalModel") }}
 {% endblock %}
 
 {% block form_content %}
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="div-form">
+                <form method="post" action="" enctype=multipart/form-data id="load-recsys">
+                    <div class="output-directory">
+                        <label>Output directory</label>
+                        <input type="text" name="outputDir" value="{{ project.eval_model.output_directory }}"></td>
+                    </div>
+                    <div class="recsys-checkbox-config">
+                        <input type="checkbox" name="useRecsys" {% if not project.recommender_system.is_complete() %} disabled {% elif project.eval_model.is_recsys_from_project() %} checked {% endif %}>
+                        <label>Use Recsys from project</label>
+                    </div>
+                    <div class="recsys-button-config">
+                        <input type="file" name="pathRecsys"><span>Import recsys config</span></input>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="wrapper-continue">
+                <button form="load-recsys" type="submit" id="continue-button" >
+                    <span>Save and continue to next section</span>
+                </button>
+            </div>
+        </div>
+    </div>
 {% endblock %}

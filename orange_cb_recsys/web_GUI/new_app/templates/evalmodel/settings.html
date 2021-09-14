@@ -63,9 +63,9 @@
                     <div class="block-metric" name="metrics-{{ algorithm['name'] }}">
                         <div class="metric-label">
                             {% if algorithm["params"]|length > 0 %}
-                                <button class="close-metric">–</button>
+                                <button class="close-metric">+</button>
                             {% endif %}
-                            <input type="checkbox"> <label> {{ algorithm['name'] }} </label>
+                            <input type="checkbox" {% if "use" in algorithm and algorithm["use"] %} checked {% endif %}> <label> {{ algorithm['name'] }} </label>
                         </div>
                         <div class="wrapper-parameters">
                             {% for param in algorithm['params'] %}
@@ -111,7 +111,7 @@
         <div class="col-12">
             <div id="wrapper-continue">
                 <button type="submit" id="save-form">
-                    <span>Save algorithm</span>
+                    <span>Save settings</span>
                 </button>
                 <button type="submit" id="continue-button">
                     <span>Save and continue to next section</span>

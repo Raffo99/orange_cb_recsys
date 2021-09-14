@@ -1,0 +1,94 @@
+#header {
+    margin-top: 3%;
+}
+
+#sub-header {
+    margin-bottom: 10%;
+}
+
+.recsys-button-config {
+    text-align: center;
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.recsys-button-config button {
+    background-color: #f1f1f1;
+    border: 0px;
+    font-size: 15px;
+    transition: 0.3s;
+    font-family: Ubuntu, sans-serif;
+    cursor: pointer;
+}
+
+.recsys-button-config button:hover {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.recsys-button-config span {
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+.recsys-button-config input {
+    left: 0px;
+    opacity: 0;
+    z-index: 2;
+    position: absolute;
+    width: 100%;
+}
+
+.recsys-button-config input:hover span {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.recsys-button-config input:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.recsys-button-config span {
+    position: absolute;
+    bottom: 0px;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+    z-index: 1;
+    width: 100%;
+}
+
+.recsys-checkbox-config {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.output-directory {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.output-directory > label {
+    margin-right: 10px;
+}
+
+.output-directory > input {
+    width: 350px;
+}
+
+#div-form {
+    border: 2px solid black;
+    border-radius: 10px;
+    background-color: #f1f1f1;
+    box-shadow: 0 4px 10px 0 rgb(0 0 0 / 20%), 0 4px 20px 0 rgb(0 0 0 / 19%);
+    display: flex;
+    flex-direction: column;
+    height: 150px;
+}

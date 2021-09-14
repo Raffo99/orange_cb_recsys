@@ -2,20 +2,35 @@ import { changeActiveBlock, getClassWithParameters, showToast } from "./utils-fu
 
 function getAlgorithms(divAlgortihms) {
     let listAlgs = []
+    if (divAlgortihms.hasClass("div-content-metrics")) {
+        $(divAlgortihms).children(".block-metrics").children(".block-metric").each(function () {
+            let listParms = []
 
-    $(divAlgortihms).children(".block-algorithms").children(".block-algorithm").each(function () {
-        let listParms = []
+            $(this).children(".wrapper-parameters").children(".block-parameter").each(function () {
+                listParms.push(getClassWithParameters($(this)));
+            });
 
-        $(this).children(".block-parameter").each(function () {
-            listParms.push(getClassWithParameters($(this)));
+            listAlgs.push({
+                "name": $(this).attr('name').replace("metrics-", ""),
+                "params": listParms,
+                "use": $(this).children(".metric-label").children("input").is(":checked")
+            })
         });
+    }
+    else {
+        $(divAlgortihms).children(".block-algorithms").children(".block-algorithm").each(function () {
+            let listParms = []
 
-        listAlgs.push({
-            "name": $(this).attr('name').replace("algtype-", ""),
-            "params": listParms
+            $(this).children(".block-parameter").each(function () {
+                listParms.push(getClassWithParameters($(this)));
+            });
+
+            listAlgs.push({
+                "name": $(this).attr('name').replace("algtype-", ""),
+                "params": listParms
+            });
         });
-    });
-
+    }
     return listAlgs
 }
 
@@ -23,9 +38,10 @@ function saveAlgorithms() {
     let partitioningAlgs = getAlgorithms($("#partitioning"));
     let partitioningSelected = $("#partitioning").children(".block-algorithms-selection").children(".select-algorithm").val();
     let metrics = getAlgorithms($("#metrics"));
-    let metricsSelected = $("#metrics").children(".block-algorithms-selection").children(".select-algorithm").val();
     let methodologyAlgs = getAlgorithms($("#methodology"));
     let methodologySelected = $("#methodology").children(".block-algorithms-selection").children(".select-algorithm").val();
+
+    console.log(metrics)
 
     $.ajax({
         type: 'POST',
@@ -39,13 +55,12 @@ function saveAlgorithms() {
             },
             "selectedAlgorithms": {
                 "partitioning": partitioningSelected,
-                "metric": metricsSelected,
                 "methodology": methodologySelected
             }
         })
     });
 
-    showToast("Algorithms saved successfully!", 2000);
+    showToast("Settings saved successfully!", 2000);
 }
 
 $(document).ready(function () {
@@ -59,6 +74,11 @@ $(document).ready(function () {
 
     $("#save-form").click(function () {
         saveAlgorithms();
+    });
+
+    $("#continue-button").click(function () {
+        saveAlgorithms();
+        window.location.replace("/execute-modules");
     });
 
     $(".block-algorithm").each(function () {

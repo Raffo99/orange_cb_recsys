@@ -8,6 +8,13 @@
 {% block header_import %}
     <title>Impostazioni Content Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-fields.css') }}">
+    {% if content_type == "Ratings" %}
+    <style>
+    #sub-header {
+        margin-bottom: 10%;
+    }
+    </style>
+    {% endif %}
 {% endblock %}
 
 {% block header %}

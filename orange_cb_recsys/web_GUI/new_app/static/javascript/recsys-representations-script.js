@@ -70,7 +70,7 @@ $(document).ready(function () {
 
     $("#continue-button").click(function () {
        saveAlgorithms();
-       // Redirect to next section
+       window.location.replace("/evalmodel/upload");
     });
 
     $("#save-form").click(function () {

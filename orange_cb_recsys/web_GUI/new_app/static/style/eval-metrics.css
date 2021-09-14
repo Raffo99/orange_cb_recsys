@@ -28,7 +28,7 @@
 }
 
 .block-metrics {
-    height: 25vh
+    height: 27vh
 }
 
 .metric-label {
@@ -37,7 +37,7 @@
     margin-top: -2px;
     display: flex;
     padding: 5px;
-    align-items: baseline;
+    align-items: center;
 }
 
 .metric-label > label {
@@ -180,11 +180,22 @@ input[type=text], input[type=number] {
 .close-metric {
     cursor: pointer;
     width: 25px;
-    height: 20px;
     text-align: center;
     font-size: 23px;
     font-weight: bold;
     background: white;
     border: 0px;
     background-color: #f1f1f1!important;
+}
+
+.wrapper-parameters {
+    display: none
+}
+
+.block-metric:last-child .metric-label {
+    border-bottom: 0px;
+}
+
+.block-metric:last-child .wrapper-parameters {
+    padding-bottom: 5px;
 }

@@ -238,6 +238,10 @@ a {
     background-color: #4285F4;
 }
 
+#evalmodel .current {
+    background-color: #BF1A2F;
+}
+
 .disabled {
     background-color: #595260;
 }

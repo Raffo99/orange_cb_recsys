@@ -13,7 +13,7 @@ from orange_cb_recsys.evaluation.eval_pipeline_modules.methodology import Method
 from inspect import signature
 from abc import ABC
 
-import orange_cb_recsys.utils.runnable_instances as r_i
+import orange_cb_recsys.runnable_instances as r_i
 import typing
 
 
@@ -248,9 +248,6 @@ def get_class_with_parameters(_class, _class_name, default_value=None):
                         class_parameters = []
 
                         for class_param in list(signature(_class).parameters.items()):
-                            print(class_param[1].default)
-                            print(class_param)
-                            print(class_param[1])
                             class_to_append = get_class_with_parameters(class_param[1].annotation, class_param[0],
                                                                         class_param[1].default)
                             if type(class_to_append).__name__ != 'NoneType' and 'name' in class_to_append:

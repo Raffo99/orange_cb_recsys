@@ -1,0 +1,89 @@
+{% extends "base-settings-module.html" %}
+{% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+
+{% block title %}
+    Recommender System
+{% endblock %}
+
+{% block header_import %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/recsys-settings.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='javascript/recsys-settings-script.js') }}"></script>
+{% endblock %}
+
+{% block sub_header %} <h4>Setup Content</h4> {% endblock %}
+
+{% block header %}
+    <h1>RECOMMENDER SYSTEM</h1>
+    <hr>
+{% endblock %}
+
+{% block nav_bar_left %}
+    {{ render_nav_bar_left(project, "Settings", "RecSys") }}
+{% endblock %}
+
+{% block form_content %}
+    <form id="main-form" method="post">
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4">
+                <div id="ca-fields-ratings">
+                    <div class="ratings-row">
+                        <div class="ratings-cell"> From Id Column</div>
+                            <div class="ratings-cell">
+                                <select name="fromIdColumn">
+                                    {% for field in fields %}
+                                        <option value="{{ field|lower }}" {% if (loop.index - 1) == project.recommender_system.from_id_column %} selected {% endif %}>
+                                        {{ loop.index - 1 }} - {{ field|capitalize }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    <div class="ratings-row">
+                        <div class="ratings-cell"> To Id Column </div>
+                        <div class="ratings-cell">
+                            <select name="toIdColumn">
+                                {% for field in fields %}
+                                    <option value="{{ field|lower }}" {% if (loop.index - 1) == project.recommender_system.to_id_column %} selected {% endif %}>
+                                    {{ loop.index - 1 }} - {{ field|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ratings-row">
+                        <div class="ratings-cell"> Score Column </div>
+                        <div class="ratings-cell">
+                            <select name="scoreColumn">
+                                {% for field in fields %}
+                                    <option value="{{ field|lower }}" {% if (loop.index - 1) == project.recommender_system.score_column %} selected {% endif %}>
+                                    {{ loop.index - 1 }} - {{ field|capitalize }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ratings-row">
+                        <div class="ratings-cell"> Timestamp Column </div>
+                        <div class="ratings-cell">
+                            <select name="timestampColumn">
+                            <option value="None">None</option>
+                            {% for field in fields %}
+                                <option value="{{ field|lower }}" {% if (loop.index - 1) == project.recommender_system.timestamp_column %} selected {% endif %}>
+                                {{ loop.index - 1 }} - {{ field|capitalize }}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <div id="wrapper-continue">
+                <button type="submit" id="continue-button" form="main-form">
+                    <span>Save and continue to next section</span>
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
