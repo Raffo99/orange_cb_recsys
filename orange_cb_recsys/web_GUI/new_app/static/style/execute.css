@@ -141,16 +141,15 @@ input[type=number] {
 .item-possible-parameter {
     display: flex;
     margin: 5px;
+    justify-content: space-between;
+    align-items: stretch;
 }
 
 .list-possible-parameter {
-    height: 200px;
+    height: 110px;
     overflow: auto;
     margin: 5px;
     border: 1px solid black;
     border-radius: 5px;
-}
-
-.list-possible-parameter:empty {
-    border: 0px;
+    width: 230px;
 }
