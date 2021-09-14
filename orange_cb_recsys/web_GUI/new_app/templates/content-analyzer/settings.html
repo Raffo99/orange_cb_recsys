@@ -1,6 +1,7 @@
 {% extends "base-settings-module.html" %}
 {% from "content-analyzer/helpers/_dynamicformhelper.html" import render_representation %}
 {% from "helpers/_navbarlefthelper.html" import render_nav_bar_left %}
+{% from "helpers/_parmshelper.html" import render_param %}
 
 {% block title %}
     Content Analyzer
@@ -11,6 +12,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style/ca-settings.css') }}">
     <script type=text/javascript src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
     {% if content_type == "Ratings" %}
+        <style>
+            #sub-header {
+                margin-bottom: 10%;
+            }
+        </style>
+        </style>
         <script type=module src="{{ url_for('static', filename='javascript/ca-settings-ratings-script.js') }}"></script>
     {% else %}
         <script type=module src="{{ url_for('static', filename='javascript/ca-settings-script.js') }}"></script>
@@ -30,6 +37,7 @@
 
 {% block form_content %}
     <div class="div-ca-settings">
+        {% if content_type != "Ratings" %}
         <div class="col-1"></div>
         <div class="col-2">
             <div id="nav-bar-fields">
@@ -54,19 +62,11 @@
                         <label>New Representation</label>
                     </div>
                     <div id="new-representation-options">
-                        {% if content_type == "Ratings" %}
-                            {% for algorithm in content_analyzer.ratings_algorithms %}
-                                <div class="new-representation-option">
-                                    <label>{{ algorithm['name'] }}</label>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            {% for algorithm in content_analyzer.content_production_algorithms %}
-                            <div class="new-representation-option">
-                                <label>{{ algorithm['name'] }}</label>
-                            </div>
-                            {% endfor %}
-                        {% endif %}
+                        {% for algorithm in content_analyzer.content_production_algorithms %}
+                        <div class="new-representation-option">
+                            <label>{{ algorithm['name'] }}</label>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="representation-list">
@@ -77,7 +77,7 @@
             <div class="col-12">
                 <div id="wrapper-continue">
                     <button type="submit" id="save-form">
-                        <span>Save fields</span>
+                        <span>Save Representations</span>
                     </button>
                     <button type="submit" id="continue-button">
                         <span>Save and continue to next section</span>
@@ -85,5 +85,45 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="div-content-algorithms">
+                <div class="block-algorithms-selection">
+                    <label>Algorithm Type</label>
+                    <select class="select-algorithm" name="algtype">
+                        {% for algorithm in content_analyzer.ratings_algorithms %}
+                            {% if algorithm["name"] == content_analyzer.selected_algorithm %}
+                                <option value="{{ algorithm['name'] }}" selected>{{ algorithm['name'] }}</option>
+                            {% else %}
+                                <option value="{{ algorithm['name'] }}">{{ algorithm['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="block-algorithms">
+                    {% for algorithm in content_analyzer.ratings_algorithms %}
+                    <div class="block-algorithm" name="algtype-{{ algorithm['name'] }}">
+                        {% for param in algorithm['params'] %}
+                            {{ render_param(param, false, None, project) }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="wrapper-continue">
+                    <button type="submit" id="save-form">
+                        <span>Save Algorithm</span>
+                    </button>
+                    <button type="submit" id="continue-button">
+                        <span>Save and continue to next section</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 {% endblock %}

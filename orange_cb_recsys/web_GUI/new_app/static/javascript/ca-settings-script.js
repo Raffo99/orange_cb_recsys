@@ -131,7 +131,7 @@ $(document).ready(function () {
     $("#continue-button").click(function () {
        saveField();
 
-       window.location.replace("/recsys/upload");
+       window.location.replace("/content-analyzer/exogenous?type=" + $_GET["type"]);
     });
 
     $("#new-representation-options").width($("#new-representation").width() + 20);
@@ -234,20 +234,13 @@ $(document).ready(function () {
         let indexRepresentation = selectedRepresentation.parent().parent().index();
         let fieldName = $(".active-field").attr("id").replace('nav-option-', '');
 
-        $.ajax({
-            type: 'POST',
-            url: "/ca-update-representations",
-            contentType: 'application/json; charset=UTF-8',
-            data: JSON.stringify({
-                'content_type': $_GET["type"],
-                'delete_representation': true,
-                'field_name': fieldName,
-                'index_representation': indexRepresentation
-            }),
-            error: function (jqXhr, textStatus, errorMessage) {
-                console.log(errorMessage);
-            }
-        });
+        let fd = new FormData();
+        fd.append('field_name', fieldName);
+        fd.append('content_type', $_GET["type"]);
+        fd.append('delete_representation', true);
+        fd.append('index_representation', indexRepresentation);
+
+        navigator.sendBeacon("/ca-update-representations", fd);
 
         selectedRepresentation.parent().parent().slideToggle(function () {
             $(this).remove();
